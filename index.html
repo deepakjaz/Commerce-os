@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Commerce OS - Sprint 9.1 Media Core</title>
+  <style>
+    :root {
+      --bg-primary: #000000;      /* Pure OLED Black */
+      --bg-surface: #121212;      /* Base Dark Mode Surface */
+      --bg-card: #1c1c1e;         /* iOS Style dark container layer */
+      --bg-active: #2c2c2e;       /* Press feedback states */
+      --text-primary: #ffffff;
+      --text-muted: #8e8e93;      /* Subdued grey meta labels */
+      --accent: #30d158;          /* WhatsApp green brand mark */
+      --danger: #ff453a;          /* Crimson red for drops/skips */
+      --border: #262629;          /* Structural clean dividers */
+      --warning: #ffb74d;         /* Dynamic training accent alert */
+      --info: #0a84ff;            /* Blue for active inquiries */
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      background: var(--bg-primary); 
+      color: var(--text-primary); 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .phone-shell {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      background: var(--bg-surface);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    .app-header {
+      height: 65px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(18, 18, 18, 0.85);
+      backdrop-filter: blur(20px);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .app-header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .view-deck {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      padding-bottom: 100px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .app-view { display: none; }
+    .app-view.active-view { display: block; }
+
+    /* --- FEED & IMAGE BOX LAYOUT MATRIX --- */
+    .feed-container { display: flex; flex-direction: column; gap: 20px; }
+    
+    .feed-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* SPRINT 9.1: DYNAMIC FEED VISUAL PREVIEW THUMBNAILS */
+    .card-media-gallery {
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+      display: none; /* Controlled via template engine dynamically */
+    }
+    .card-media-gallery img {
+      width: 100%;
+      height: auto;
+      max-height: 280px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .feed-card-header { display: flex; justify-content: space-between; align-items: center; }
+    .supplier-pill { font-size: 0.75rem; font-weight: 600; background: var(--bg-active); padding: 4px 10px; border-radius: 20px; color: var(--text-muted); }
+    .feed-card-body h3 { font-size: 1.15rem; font-weight: 600; }
+    .feed-card-body p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.45; margin-top: 4px; white-space: pre-wrap; }
+    .dynamic-attributes-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    
+    .attribute-chip {
+      background: rgba(48, 209, 88, 0.1);
+      border: 1px solid rgba(48, 209, 88, 0.2);
+      color: var(--accent);
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .feed-card-pricing { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; }
+    .price-tag { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+    .price-base { font-size: 0.85rem; color: var(--text-muted); text-decoration: line-through; }
+    .shipping-extra-tag { font-size: 0.8rem; color: var(--warning); font-weight: 600; }
+    
+    .feed-quick-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-top: 4px; }
+    
+    .action-btn {
+      padding: 14px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer;
+      text-transform: uppercase; display: flex; align-items: center; justify-content: center;
+    }
+    .btn-reject { background: rgba(255, 69, 58, 0.15); color: var(--danger); }
+    .btn-edit-curate { background: var(--bg-active); color: var(--text-primary); border: 1px solid var(--border); }
+
+    .intake-meta-row { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .form-label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; font-weight: 700; }
+    
+    select, textarea, input.native-input {
+      width: 100%; background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-primary); padding: 14px; font-size: 1rem; border-radius: 10px; outline: none;
+    }
+
+    .export-panel-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    .export-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.85rem; }
+    .export-table th { text-align: left; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .export-table td { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+
+    .pincode-widget {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .pincode-row-inputs { display: flex; gap: 8px; width: 100%; }
+    .pincode-input { flex: 1; min-width: 0; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); color: #fff; border-radius: 8px; font-size: 0.85rem; }
+    .pincode-btn { padding: 0 16px; background: var(--info); color: #fff; font-weight: bold; font-size: 0.8rem; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; flex-shrink: 0; }
+    .pincode-feedback { font-size: 0.8rem; font-weight: 600; padding: 6px 10px; border-radius: 6px; display: block; width: 100%; text-align: left; }
+    .feedback-pending { background: rgba(255, 183, 77, 0.1); color: var(--warning); border: 1px solid rgba(255,183,77,0.2); }
+    .feedback-verified { background: rgba(48, 209, 88, 0.1); color: var(--accent); border: 1px solid rgba(48,209,88,0.2); }
+
+    /* --- VIEW 3: CUSTOMER SHIELDED HUB STYLING --- */
+    .heart-like-toggle {
+      position: absolute;
+      top: 16px; right: 18px;
+      font-size: 1.5rem; cursor: pointer;
+      color: #3a3a3c;
+      transition: transform 0.12s ease;
+      z-index: 5;
+    }
+    .heart-like-toggle.is-active-favorite { color: #ff2d55; transform: scale(1.15); }
+    .brand-pill { font-size: 0.75rem; font-weight: 600; background: var(--bg-active); padding: 4px 12px; border-radius: 20px; color: var(--text-muted); align-self: flex-start; }
+
+    /* --- CURATOR SLIDE OVERDRAWER SHEET --- */
+    .fullscreen-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg-surface); z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.22s cubic-bezier(0.1, 0.7, 0.1, 1);
+    }
+    .fullscreen-overlay.overlay-open { transform: translateY(0) !important; }
+    .overlay-header { height: 65px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .overlay-body { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+    .editor-actions-bar { padding: 16px; border-top: 1px solid var(--border); background: var(--bg-surface); display: grid; grid-template-columns: 1fr 2fr; gap: 12px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); flex-shrink: 0; }
+
+    /* SPRINT 9.1: CURATOR DRAW SHEET IMAGE PREVIEW AREA */
+    .drawer-media-uploader {
+      background: var(--bg-primary);
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+      cursor: pointer;
+      position: relative;
+    }
+    .drawer-media-preview-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .drawer-preview-thumb {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .matrix-editor-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    .matrix-editor-table th { text-align: left; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; padding-bottom: 6px; }
+    .matrix-editor-table td { padding: 4px 0; }
+    .remove-matrix-row-btn { background: none; border: none; color: var(--danger); font-size: 1.4rem; cursor: pointer; padding: 0 8px; }
+    .add-matrix-row-trigger { background: var(--bg-primary); border: 1px dashed var(--border); padding: 12px; border-radius: 8px; text-align: center; font-size: 0.8rem; color: var(--accent); cursor: pointer; font-weight: bold; margin-bottom: 16px; }
+
+    /* --- BOTTOM FIXED NAVIGATION TABS --- */
+    .bottom-tabs {
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 75px;
+      background: rgba(18, 18, 18, 0.94); border-top: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr 1fr 1fr; z-index: 20;
+      padding-bottom: env(safe-area-inset-bottom); backdrop-filter: blur(20px); flex-shrink: 0;
+    }
+    .tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; font-weight: 600; gap: 4px; }
+    .tab-item.tab-active { color: var(--accent); }
+    .tab-icon { font-size: 1.3rem; }
+    
+    .chip { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .chip.chip-active { background: var(--text-primary); color: #000; border-color: var(--text-primary); }
+    .filter-scroller { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; width: 100%; }
+    .filter-scroller::-webkit-scrollbar { display: none; }
+    .empty-state { color: var(--text-muted); text-align: center; padding: 40px 20px; font-size: 0.9rem; }
+    
+    .status-badge-verification { font-size: 0.7rem; background: rgba(255, 183, 77, 0.15); color: var(--warning); padding: 4px 8px; border-radius: 6px; font-weight: bold; border: 1px solid rgba(255, 183, 77, 0.3); }
+
+    .supplier-list-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <div class="phone-shell">
+    
+    <header class="app-header">
+      <h1 id="view-title-label">Active Feed</h1>
+      <span id="feed-badge-counter" style="font-size: 0.75rem; background: var(--accent); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 800;">0</span>
+      <button type="button" class="chip" id="nav-whatsapp-sync-cta" style="background:var(--accent); color:#000; border:none; display:none; font-size:0.75rem; padding:6px 12px;" onclick="studio.generateWhatsAppIntent()">Inquire Likes (0)</button>
+    </header>
+
+    <main class="view-deck">
+      
+      <!-- VIEWPORT 1: RESELLER FEED WORKSPACE -->
+      <section id="pane-feed" class="app-view active-view">
+        <div class="export-panel-container" id="reseller-export-panel">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="font-size:0.8rem; text-transform:uppercase; color:var(--warning);">📦 Pincode Verification Queue</h4>
+            <button class="chip" style="font-size:0.7rem; padding:4px 8px; background:var(--info); color:#fff; border:none;" onclick="studio.copyBulkPincodeIntent()">WhatsApp Bulk Copy</button>
+          </div>
+          <table class="export-table">
+            <thead>
+              <tr>
+                <th>Supplier Sourced</th>
+                <th>Target Item</th>
+                <th>Requested Pincodes</th>
+              </tr>
+            </thead>
+            <tbody id="export-queue-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="filter-scroller" style="align-items: center; display: flex;">
+          <div class="chip chip-active" data-status-filter="all">All Items</div>
+          <div class="chip" data-status-filter="Imported">New Imports</div>
+          <div class="chip" data-status-filter="Reviewing">Reviewing</div>
+          <div class="chip" data-status-filter="Ready">Ready to Share</div>
+          <button type="button" class="chip" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); font-size: 0.8rem; margin-left: auto; flex-shrink:0;" onclick="studio.showSupplierManager()">⚙️ Manage</button>
+        </div>
+        <div id="feed-cards-anchor" class="feed-container" style="margin-top: 16px;"></div>
+      </section>
+
+      <!-- VIEWPORT 2: INGESTION STREAMS -->
+      <section id="pane-intake" class="app-view">
+        <form id="intake-form" onsubmit="studio.handleIntakeSubmit(event)">
+          <div class="intake-meta-row">
+            <div>
+              <label class="form-label">Supplier Source</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <select id="intake-supplier-select" style="flex: 1; height: 48px;"></select>
+                <button type="button" class="chip" style="background: var(--accent); color: #000; font-weight: bold; border: none; height: 48px; width: 48px; border-radius: 10px; display: flex; justify-content: center; align-items: center; padding:0;" onclick="studio.promptQuickAddSupplier()">➕</button>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Calculated Margin Multiplier</label>
+              <select id="intake-margin-preset" style="height: 48px;">
+                <option value="1.25">Standard Stock (+25%)</option>
+                <option value="1.20">High Ticket Value (+20%)</option>
+                <option value="1.30">Premium Margin (+30%)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Raw Sourced Message Content Block</label>
+            <textarea id="intake-raw-text" rows="12" placeholder="Paste unorganized text stream directly from the supplier chat... Use '$' or '+' anywhere to trigger dynamic pin-code calculations."></textarea>
+          </div>
+
+          <button type="submit" class="btn action-btn" style="background: var(--text-primary); color: var(--bg-primary); width:100%; margin-top: 12px;">Process Stream Ingestion</button>
+        </form>
+      </section>
+
+      <!-- VIEWPORT 3: CUSTOMER HUB STOREFRONT -->
+      <section id="pane-customer" class="app-view">
+        <div id="customer-cards-anchor" class="feed-container"></div>
+      </section>
+
+    </main>
+
+    <!-- FULL SCREEN CURATOR DRAW SHEET MODULE -->
+    <section class="fullscreen-overlay" id="curation-drawer">
+      <div class="overlay-header">
+        <h2 style="font-size: 1.1rem; font-weight: 700;">Curate Design</h2>
+        <button type="button" class="chip" onclick="studio.hideCuratorDrawer()">Minimize</button>
+      </div>
+      <div class="overlay-body">
+        <form id="curate-form" onsubmit="event.preventDefault();">
+          <input type="hidden" id="curate-draft-id">
+          
+          <!-- SPRINT 9.1: CORE MEDIA COMPONENT ENTRY HOOK -->
+          <div class="drawer-media-uploader" onclick="document.getElementById('drawer-hidden-file-input').click();">
+            <span style="font-size:0.8rem; font-weight:bold; color:var(--accent);">📸 Tap to Upload Pattern Images</span>
+            <input type="file" id="drawer-hidden-file-input" accept="image/*" multiple style="display:none;" onchange="studio.handleDrawerImageUpload(event)">
+            <div class="drawer-media-preview-container" id="drawer-media-preview-anchor"></div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label">Customer Display Heading</label>
+            <input type="text" id="curate-title" class="native-input" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;" class="form-group">
+            <div>
+              <label class="form-label">Supplier Base Cost (₹)</label>
+              <input type="number" id="curate-base-price" class="native-input" oninput="studio.syncMarkupMath()">
+            </div>
+            <div>
+              <label class="form-label">Retail Selling Price (₹)</label>
+              <input type="number" id="curate-consumer-price" class="native-input">
+            </div>
+          </div>
+
+          <!-- APPROVED PINCODE OVERRIDE MATRIX -->
+          <div class="form-group" style="margin-bottom: 16px; border: 1px solid var(--border); padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.2);">
+            <label class="form-label" style="color: var(--accent);">Approved Supplier Rates Matrix</label>
+            <div style="display:flex; gap:8px; margin-bottom: 8px;">
+              <input type="text" id="matrix-pincode-input" class="native-input" placeholder="Enter Pincode" style="padding:8px;">
+              <input type="number" id="matrix-rate-input" class="native-input" placeholder="Rate (₹)" style="padding:8px;">
+              <button type="button" class="chip" style="background:var(--accent); color:#000; border:none; font-weight:bold;" onclick="studio.addPincodeOverrideRow()">Add</button>
+            </div>
+            <table class="matrix-editor-table" style="margin-bottom:0;">
+              <thead>
+                <tr>
+                  <th>Pincode</th>
+                  <th>Approved Delivery Fee</th>
+                  <th style="width:40px;"></th>
+                </tr>
+              </thead>
+              <tbody id="drawer-pincode-matrix-tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label">Cleaned Buyer Description (White-Labeled)</label>
+            <textarea id="curate-description" rows="4" style="width:100%; background:var(--bg-card); border:1px solid var(--border); color:var(--text-primary); padding:10px; border-radius:10px; font-size:0.95rem; outline:none;"></textarea>
+          </div>
+
+          <!-- SCHEMALESS MATRIX INPUT MANAGER -->
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label">Dynamic Spec Fields Matrix (e.g. Fabric, Sizes, Weight)</label>
+            <table class="matrix-editor-table">
+              <thead>
+                <tr>
+                  <th>Field Label</th>
+                  <th>Extracted Target Value</th>
+                  <th style="width: 40px;"></th>
+                </tr>
+              </thead>
+              <tbody id="drawer-attributes-tbody"></tbody>
+            </table>
+            <div class="add-matrix-row-trigger" onclick="studio.appendBlankAttributeRow()">+ Add Custom Specification Row</div>
+          </div>
+
+          <div class="intake-meta-row">
+            <div>
+              <label class="form-label">Category Filter Tag</label>
+              <input type="text" id="curate-category" class="native-input">
+            </div>
+            <div>
+              <label class="form-label">Marketing Collection</label>
+              <input type="text" id="curate-collection" class="native-input">
+            </div>
+          </div>
+
+          <div class="intake-meta-row">
+            <div>
+              <label class="form-label">Workflow Stage</label>
+              <select id="curate-status">
+                <option value="Imported">Imported</option>
+                <option value="Reviewing">Reviewing</option>
+                <option value="Ready">Ready to Share</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Triage Decision</label>
+              <select id="curate-decision">
+                <option value="Pending">Pending</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Raw Sourced Supplier Text (Training Matrix View)</label>
+            <textarea id="curate-raw-text" rows="5" readonly style="font-family: monospace; font-size: 0.8rem; background: var(--bg-primary); opacity: 0.65;"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="editor-actions-bar">
+        <button type="button" class="action-btn btn-reject" onclick="studio.drawerRejectSkip()">Skip</button>
+        <button type="button" class="action-btn" style="background: var(--accent); color: #000;" onclick="studio.drawerSaveAndTrain()">Save & Train Engine</button>
+      </div>
+    </section>
+
+    <!-- FULL SCREEN SUPPLIER MANAGEMENT OVERLAY PANEL -->
+    <section class="fullscreen-overlay" id="supplier-manager-drawer">
+      <div class="overlay-header">
+        <h2 style="font-size: 1.1rem; font-weight: 700;">Manage Suppliers</h2>
+        <button type="button" class="chip" onclick="studio.hideSupplierManager()">Close</button>
+      </div>
+      <div class="overlay-body">
+        <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 14px; border-radius: 12px; margin-bottom: 16px;">
+          <label class="form-label">Register New Supplier Entity</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <input type="text" id="manager-new-supplier-name" class="native-input" placeholder="Enter Company Name" style="padding: 10px; height:46px;">
+            <button type="button" class="chip" style="background: var(--accent); color: #000; font-weight: bold; border: none; padding: 0 16px; height:46px; flex-shrink:0;" onclick="studio.addSupplierFromManager()">Add</button>
+          </div>
+        </div>
+        <label class="form-label">Active Directory</label>
+        <div id="supplier-directory-list" style="margin-top: 8px;"></div>
+      </div>
+    </section>
+
+    <!-- FIXED MOBILE FOOTER NAV TABS -->
+    <nav class="bottom-tabs">
+      <div class="tab-item tab-active" id="nav-feed" onclick="studio.navigate('feed')">
+        <span class="tab-icon">📱</span>
+        <span>Studio Feed</span>
+      </div>
+      <div class="tab-item" id="nav-intake" onclick="studio.navigate('intake')">
+        <span class="tab-icon">📥</span>
+        <span>New Batch</span>
+      </div>
+      <div class="tab-item" id="nav-customer" onclick="studio.navigate('customer')">
+        <span class="tab-icon">🛍️</span>
+        <span>Client Hub</span>
+      </div>
+    </nav>
+
+  </div>
+
+  <script>
+    const DB = {
+      instance: null,
+      init() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open('CommerceOS_Consolidated_Core_V4', 1);
+          
+          req.onupgradeneeded = (e) => {
+            const d = e.target.result;
+            if (!d.objectStoreNames.contains('suppliers')) d.createObjectStore('suppliers', { keyPath: 'id' });
+            if (!d.objectStoreNames.contains('rules')) d.createObjectStore('rules', { keyPath: 'supplierId' });
+            if (!d.objectStoreNames.contains('drafts')) d.createObjectStore('drafts', { keyPath: 'id' });
+          };
+          
+          req.onsuccess = (e) => { this.instance = e.target.result; resolve(); };
+          req.onerror = (e) => reject(e.target.error);
+        });
+      },
+      async operation(store, mode, method, payload = null) {
+        if (!this.instance) await this.init();
+        return new Promise((resolve, reject) => {
+          const trans = this.instance.transaction(store, mode);
+          const objStore = trans.objectStore(store);
+          const request = payload !== null ? objStore[method](payload) : objStore[method]();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+    };
+
+    const LearningParser = {
+      async executeParse(supplierId, rawText) {
+        if (!rawText) return { derivedPrice: 0, customerDescription: '', customAttributes: {} };
+        let rule = null;
+        try { rule = await DB.operation('rules', 'readonly', 'get', supplierId); } catch (e){}
+
+        if (!rule) {
+          rule = {
+            supplierId: supplierId,
+            priceAnchors: ['rate :', 'rate:', 'rate', 'price', 'prc'],
+            attributeAnchors: {
+              'fabric': ['fabric', 'fabrics', 'top :'],
+              'sizes': ['size', 'size:', 'sizes'],
+              'weight': ['weight', 'weight :', 'weight:']
+            }
+          };
+        }
+
+        const lines = rawText.split('\n').map(l => l.trim());
+        let detectedPrice = 0;
+        let customAttributes = {};
+
+        for (const line of lines) {
+          if (!line) continue;
+          const lowerLine = line.toLowerCase();
+          for (const anchor of rule.priceAnchors) {
+            if (lowerLine.includes(anchor)) {
+              const segment = lowerLine.split(anchor)[1] || '';
+              const match = segment.match(/\d+/);
+              if (match) { detectedPrice = parseFloat(match[0]); break; }
+            }
+          }
+        }
+
+        for (const [attrKey, anchors] of Object.entries(rule.attributeAnchors)) {
+          for (const line of lines) {
+            if (!line) continue;
+            const lowerLine = line.toLowerCase();
+            for (const anchor of anchors) {
+              if (lowerLine.includes(anchor)) {
+                let derivedVal = line.split(new RegExp(anchor, 'i'))[1] || '';
+                derivedVal = derivedVal.replace(/^[:\-\s]+/, '').trim();
+                if (derivedVal) { customAttributes[attrKey] = derivedVal; break; }
+              }
+            }
+            if (customAttributes[attrKey]) break;
+          }
+        }
+
+        const customerDescription = lines.filter(line => {
+          const lower = line.toLowerCase();
+          return !(lower.includes('rate') || lower.includes('rs') || lower.includes('₹') || lower.includes('$') || lower.includes('+'));
+        }).join('\n');
+
+        return { derivedPrice: detectedPrice, customerDescription, customAttributes };
+      },
+
+      async learnCorrection(supplierId, rawText, fieldKey, manualWordTarget) {
+        if (!manualWordTarget) return;
+        try {
+          let rule = await DB.operation('rules', 'readonly', 'get', supplierId);
+          if (!rule) rule = { supplierId: supplierId, priceAnchors: ['rate:', 'price'], attributeAnchors: {} };
+          const lines = rawText.split('\n').map(l => l.toLowerCase().trim());
+          const matchString = manualWordTarget.toString().toLowerCase().trim();
+          for (const line of lines) {
+            if (line.includes(matchString)) {
+              const prefix = line.split(matchString)[0].trim();
+              if (prefix.length > 1) {
+                if (fieldKey === 'price') {
+                  if (!rule.priceAnchors.includes(prefix)) rule.priceAnchors.unshift(prefix);
+                } else {
+                  if (!rule.attributeAnchors[fieldKey]) rule.attributeAnchors[fieldKey] = [];
+                  if (!rule.attributeAnchors[fieldKey].includes(prefix)) rule.attributeAnchors[fieldKey].unshift(prefix);
+                }
+              }
+            }
+          }
+          await DB.operation('rules', 'readwrite', 'put', rule);
+        } catch (e) {}
+      }
+    };
+
+    const FavoritesClient = {
+      cacheKey: 'CommerceOS_Final_User_Likes_V2',
+      pincodeKey: 'CommerceOS_Customer_Pincode_Queries',
+      toggleLocalFavorite(listingId) {
+        let currentArray = this.fetchStoredFavorites();
+        if (currentArray.includes(listingId)) {
+          currentArray = currentArray.filter(id => id !== listingId);
+        } else {
+          currentArray.push(listingId);
+        }
+        localStorage.setItem(this.cacheKey, JSON.stringify(currentArray));
+        return currentArray;
+      },
+      fetchStoredFavorites() {
+        const dataPayload = localStorage.getItem(this.cacheKey);
+        return dataPayload ? JSON.parse(dataPayload) : [];
+      },
+      logPincodeRequest(listingId, pincode) {
+        let logs = this.fetchPincodeRequests();
+        if (!logs[listingId]) logs[listingId] = [];
+        if (!logs[listingId].includes(pincode)) logs[listingId].push(pincode);
+        localStorage.setItem(this.pincodeKey, JSON.stringify(logs));
+      },
+      fetchPincodeRequests() {
+        const payload = localStorage.getItem(this.pincodeKey);
+        return payload ? JSON.parse(payload) : {};
+      }
+    };
+
+    const studio = {
+      currentFilter: 'all',
+      activeDraftRecord: null,
+      stickySupplierId: 'sup_1',
+      suppliersCache: {},
+      activeViewName: 'feed',
+      temporaryPincodeCache: {},
+      temporaryImagesCache: [], // SPRINT 9.1: In-memory store for processing new photos
+
+      async start() {
+        try {
+          await DB.init();
+          await this.seedSuppliersData();
+          await this.loadSuppliersSelectionUI();
+          await this.renderFeedTimeline();
+          this.initFilterChips();
+          this.refreshFavoritesIndicatorState();
+        } catch (err) {
+          console.error(err);
+        }
+      },
+
+      async seedSuppliersData() {
+        const data = await DB.operation('suppliers', 'readonly', 'getAll');
+        if (data.length === 0) {
+          const seed = [
+            { id: 'sup_1', name: 'Kumbh Textiles (Surat HQ)' },
+            { id: 'sup_2', name: 'Shabeena Embroidery Wholesalers' }
+          ];
+          for (const s of seed) await DB.operation('suppliers', 'readwrite', 'put', s);
+        }
+        const freshList = await DB.operation('suppliers', 'readonly', 'getAll');
+        this.suppliersCache = {};
+        freshList.forEach(s => this.suppliersCache[s.id] = s.name);
+      },
+
+      async loadSuppliersSelectionUI() {
+        const list = await DB.operation('suppliers', 'readonly', 'getAll');
+        const selectEl = document.getElementById('intake-supplier-select');
+        if (selectEl) {
+          selectEl.innerHTML = list.map(s => `
+            <option value="${s.id}" ${s.id === this.stickySupplierId ? 'selected' : ''}>${s.name}</option>
+          `).join('');
+        }
+      },
+
+      initFilterChips() {
+        document.querySelectorAll('[data-status-filter]').forEach(chip => {
+          chip.addEventListener('click', (e) => {
+            document.querySelectorAll('[data-status-filter]').forEach(c => c.classList.remove('chip-active'));
+            e.target.classList.add('chip-active');
+            this.currentFilter = e.target.dataset.statusFilter;
+            this.renderFeedTimeline();
+          });
+        });
+      },
+
+      async promptQuickAddSupplier() {
+        const name = prompt("Enter the name of the new Sourcing Supplier:");
+        if (!name || !name.trim()) return;
+        const newId = 'sup_' + Date.now();
+        await DB.operation('suppliers', 'readwrite', 'put', { id: newId, name: name.trim() });
+        this.suppliersCache[newId] = name.trim();
+        this.stickySupplierId = newId;
+        await this.loadSuppliersSelectionUI();
+        await this.renderFeedTimeline();
+      },
+
+      async showSupplierManager() {
+        document.getElementById('supplier-manager-drawer').classList.add('overlay-open');
+        await this.renderSupplierDirectoryList();
+      },
+
+      hideSupplierManager() {
+        document.getElementById('supplier-manager-drawer').classList.remove('overlay-open');
+      },
+
+      async renderSupplierDirectoryList() {
+        const directoryContainer = document.getElementById('supplier-directory-list');
+        if (!directoryContainer) return;
+        const list = await DB.operation('suppliers', 'readonly', 'getAll');
+        directoryContainer.innerHTML = '';
+        if (list.length === 0) {
+          directoryContainer.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding: 20px;">Supplier directory empty.</div>';
+          return;
+        }
+        list.forEach(sup => {
+          const div = document.createElement('div');
+          div.className = 'supplier-list-item';
+          div.innerHTML = `
+            <div>
+              <span style="font-weight:bold; color:var(--text-primary);">${sup.name}</span>
+            </div>
+            <button type="button" class="chip" style="background:rgba(255, 69, 58, 0.15); color:var(--danger); border:none; font-size:0.75rem;" onclick="studio.deleteSupplierFromManager('${sup.id}')">Delete</button>
+          `;
+          directoryContainer.appendChild(div);
+        });
+      },
+
+      async addSupplierFromManager() {
+        const nameInput = document.getElementById('manager-new-supplier-name');
+        const name = nameInput ? nameInput.value.trim() : '';
+        if (!name) return alert("Please type a valid company name.");
+        const newId = 'sup_' + Date.now();
+        await DB.operation('suppliers', 'readwrite', 'put', { id: newId, name });
+        this.suppliersCache[newId] = name;
+        if (nameInput) nameInput.value = '';
+        await this.renderSupplierDirectoryList();
+        await this.loadSuppliersSelectionUI();
+        await this.renderFeedTimeline();
+      },
+
+      async deleteSupplierFromManager(id) {
+        if (!confirm("Are you sure you want to remove this supplier?")) return;
+        await DB.operation('suppliers', 'readwrite', 'delete', id);
+        delete this.suppliersCache[id];
+        await this.renderSupplierDirectoryList();
+        await this.loadSuppliersSelectionUI();
+        await this.renderFeedTimeline();
+      },
+
+      /* SPRINT 9.1: CONVERT BLOB FILES INTO STABLE BASE64 DATA URLS */
+      handleDrawerImageUpload(e) {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64String = event.target.result;
+            this.temporaryImagesCache.push(base64String);
+            this.renderDrawerImagesPreviewUI();
+          };
+          reader.readAsDataURL(file);
+        });
+      },
+
+      renderDrawerImagesPreviewUI() {
+        const anchor = document.getElementById('drawer-media-preview-anchor');
+        if (!anchor) return;
+        anchor.innerHTML = '';
+        this.temporaryImagesCache.forEach((imgSrc, idx) => {
+          const img = document.createElement('img');
+          img.src = imgSrc;
+          img.className = 'drawer-preview-thumb';
+          img.title = "Tap to remove";
+          img.onclick = (e) => {
+            e.stopPropagation(); // Prevents launching file picker on delete tap
+            studio.temporaryImagesCache.splice(idx, 1);
+            studio.renderDrawerImagesPreviewUI();
+          };
+          anchor.appendChild(img);
+        });
+      },
+
+      async handleIntakeSubmit(e) {
+        e.preventDefault();
+        try {
+          const supplierId = document.getElementById('intake-supplier-select').value;
+          this.stickySupplierId = supplierId;
+          const rawTextEl = document.getElementById('intake-raw-text');
+          const rawText = rawTextEl ? rawTextEl.value.trim() : '';
+          const baseMargin = parseFloat(document.getElementById('intake-margin-preset').value);
+
+          if (!rawText) return alert('Please paste supplier description text first.');
+
+          const draftId = 'drf_' + crypto.randomUUID();
+          const parsed = await LearningParser.executeParse(supplierId, rawText);
+          const lines = rawText.split('\n').filter(l => l.trim().length > 0);
+          const inferredTitle = lines[0] ? lines[0].replace(/[^\w\s]/gi, '').substring(0, 35) : 'Batch Item Design';
+
+          await DB.operation('drafts', 'readwrite', 'put', {
+            id: draftId, supplierId, title: inferredTitle,
+            description: parsed.customerDescription, rawText: rawText,
+            basePrice: parsed.derivedPrice || 0,
+            consumerPrice: parsed.derivedPrice ? Math.round(parsed.derivedPrice * baseMargin) : 0,
+            pincode_rates: {},
+            mediaIds: [], // Placeholder array updated by Sprint 9.1 saves
+            customAttributes: parsed.customAttributes || {},
+            category: parsed.customAttributes['fabric'] || '', 
+            collection: '', decision: 'Pending', status: 'Imported',
+            createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+          });
+
+          if (rawTextEl) rawTextEl.value = '';
+          await this.renderFeedTimeline();
+          this.navigate('feed');
+        } catch (err) {
+          alert(err.message);
+        }
+      },
+
+      navigate(target) {
+        this.activeViewName = target;
+        document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('tab-active'));
+        
+        const counterNode = document.getElementById('feed-badge-counter');
+        const ctaNode = document.getElementById('nav-whatsapp-sync-cta');
+
+        if (target === 'feed') {
+          document.getElementById('pane-feed').classList.add('active-view');
+          document.getElementById('nav-feed').classList.add('tab-active');
+          document.getElementById('view-title-label').innerText = "Studio Feed";
+          if (counterNode) counterNode.style.display = 'block';
+          if (ctaNode) ctaNode.style.display = 'none';
+          this.renderFeedTimeline();
+        } else if (target === 'intake') {
+          document.getElementById('pane-intake').classList.add('active-view');
+          document.getElementById('nav-intake').classList.add('tab-active');
+          document.getElementById('view-title-label').innerText = "Capture Batch";
+          if (counterNode) counterNode.style.display = 'none';
+          if (ctaNode) ctaNode.style.display = 'none';
+        } else if (target === 'customer') {
+          document.getElementById('pane-customer').classList.add('active-view');
+          document.getElementById('nav-customer').classList.add('tab-active');
+          document.getElementById('view-title-label').innerText = "Client Hub";
+          if (counterNode) counterNode.style.display = 'none';
+          this.refreshFavoritesIndicatorState();
+          this.renderCustomerCatalogTimeline();
+        }
+      },
+
+      async renderFulfillmentExportPanel(drafts) {
+        const tbody = document.getElementById('export-queue-tbody');
+        if (!tbody) return;
+        const loggedRequests = FavoritesClient.fetchPincodeRequests();
+        tbody.innerHTML = '';
+        let dynamicRowsExist = false;
+        for (const draft of drafts) {
+          const codes = loggedRequests[draft.id] || [];
+          if (codes.length > 0) {
+            dynamicRowsExist = true;
+            const tr = document.createElement('tr');
+            const supplierName = this.suppliersCache[draft.supplierId] || 'Direct Sourced';
+            tr.innerHTML = `
+              <td style="color:var(--text-primary); font-weight:bold;">${supplierName}</td>
+              <td>${draft.title}</td>
+              <td><span style="color:var(--warning); font-weight:bold;">${codes.join(', ')}</span></td>
+            `;
+            tbody.appendChild(tr);
+          }
+        }
+        if (!dynamicRowsExist) {
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); font-size:0.75rem; padding:10px;">No pending pincode lookups in queue.</td></tr>`;
+        }
+      },
+
+      async copyBulkPincodeIntent() {
+        const drafts = await DB.operation('drafts', 'readonly', 'getAll');
+        const loggedRequests = FavoritesClient.fetchPincodeRequests();
+        let textBlock = "Hello! Please verify the shipping rates and ETA for these item lookups:\n\n";
+        let analyticalMatchesFound = false;
+        for (const d of drafts) {
+          const codes = loggedRequests[d.id] || [];
+          if (codes.length > 0) {
+            analyticalMatchesFound = true;
+            textBlock += `📌 Design: *${d.title}*\n   Pincodes to check: ${codes.join(', ')}\n\n`;
+          }
+        }
+        textBlock += "Please let me know so I can complete the dynamic catalog entries. Thanks!";
+        if (!analyticalMatchesFound) return alert("Your verification line queue is currently empty.");
+        navigator.clipboard.writeText(textBlock);
+        alert("Fulfillment ticket copied to clipboard!");
+      },
+
+      async renderFeedTimeline() {
+        if (!DB.instance) return;
+        const anchor = document.getElementById('feed-cards-anchor');
+        if (!anchor) return;
+        
+        const drafts = await DB.operation('drafts', 'readonly', 'getAll');
+        await this.renderFulfillmentExportPanel(drafts);
+
+        const filtered = drafts.filter(d => this.currentFilter === 'all' || d.status === this.currentFilter);
+        const counter = document.getElementById('feed-badge-counter');
+        if (counter) counter.innerText = filtered.length;
+
+        anchor.innerHTML = '';
+        if (filtered.length === 0) {
+          anchor.innerHTML = `<div class="empty-state"><h3>Workspace Stream Clear</h3><p>Tap 'New Batch' to ingest supplier updates.</p></div>`;
+          return;
+        }
+
+        filtered.sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+        filtered.forEach(d => {
+          const card = document.createElement('div');
+          card.className = 'feed-card';
+          const name = this.suppliersCache[d.supplierId] || 'Direct Sourced';
+
+          let attributeChipsHtml = '';
+          if (d.customAttributes) {
+            for (const [key, value] of Object.entries(d.customAttributes)) {
+              if (value) attributeChipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`;
+            }
+          }
+
+          // SPRINT 9.1: Append dynamic preview window if images are loaded inside IndexedDB
+          let mediaGalleryHtml = '';
+          if (d.mediaIds && d.mediaIds.length > 0) {
+            mediaGalleryHtml = `
+              <div class="card-media-gallery" style="display:block;">
+                <img src="${d.mediaIds[0]}" alt="Pattern Preview">
+              </div>
+            `;
+          }
+
+          card.innerHTML = `
+            ${mediaGalleryHtml}
+            <div class="feed-card-header">
+              <span class="supplier-pill">From: ${name}</span>
+              <span class="status-badge-verification">${d.status}</span>
+            </div>
+            
+            <div class="feed-card-body">
+              <h3>${d.title || 'Untitled Item'}</h3>
+              <p>${(d.description || '').replace(/\n/g, '<br>')}</p>
+              <div class="dynamic-attributes-container">${attributeChipsHtml}</div>
+            </div>
+
+            <div class="feed-card-pricing" style="margin-top: 4px;">
+              <span class="price-tag">Retail: ₹${d.consumerPrice || '0'}</span>
+              <span class="price-base">Cost: ₹${d.basePrice || '0'}</span>
+            </div>
+
+            <div class="feed-quick-actions">
+              <button type="button" class="action-btn btn-reject" onclick="studio.fastSkipItem('${d.id}')">Skip</button>
+              <button type="button" class="action-btn btn-edit-curate" onclick="studio.showCuratorDrawer('${d.id}')">Edit</button>
+            </div>
+          `;
+          anchor.appendChild(card);
+        });
+      },
+
+      async renderCustomerCatalogTimeline() {
+        if (!DB.instance) return;
+        const anchor = document.getElementById('customer-cards-anchor');
+        if (!anchor) return;
+        
+        const drafts = await DB.operation('drafts', 'readonly', 'getAll');
+        const publicListings = drafts.filter(d => d.status === 'Ready');
+        const activeLikes = FavoritesClient.fetchStoredFavorites();
+
+        anchor.innerHTML = '';
+        if (publicListings.length === 0) {
+          anchor.innerHTML = `<div class="empty-state"><h3>Catalog Empty</h3><p>Ready to Share view stream empty.</p></div>`;
+          return;
+        }
+
+        publicListings.sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+        publicListings.forEach(d => {
+          const card = document.createElement('div');
+          card.className = 'feed-card';
+          const isFav = activeLikes.includes(d.id);
+
+          let chipsHtml = '';
+          if (d.customAttributes) {
+            for (const [key, value] of Object.entries(d.customAttributes)) {
+              if (value) chipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`;
+            }
+          }
+
+          // SPRINT 9.1: Customer Shield Hub visually pulls image assets
+          let mediaGalleryHtml = '';
+          if (d.mediaIds && d.mediaIds.length > 0) {
+            mediaGalleryHtml = `
+              <div class="card-media-gallery" style="display:block;">
+                <img src="${d.mediaIds[0]}" alt="Pattern Catalog Image">
+              </div>
+            `;
+          }
+
+          card.innerHTML = `
+            ${mediaGalleryHtml}
+            <div class="heart-like-toggle ${isFav ? 'is-active-favorite' : ''}" onclick="studio.handleCustomerLikeTap('${d.id}', this)">♥</div>
+            <div class="brand-pill">Exclusive Catalog</div>
+            
+            <div class="feed-card-body">
+              <h3>${d.title || 'Design Pattern'}</h3>
+              <p>${(d.description || '').replace(/\n/g, '<br>')}</p>
+              <div class="dynamic-attributes-container">${chipsHtml}</div>
+            </div>
+
+            <div class="feed-card-pricing" id="price-box-${d.id}" style="margin-top: 4px;">
+              <div style="display:flex; align-items:baseline; gap:6px;">
+                 <span class="price-tag">₹${d.consumerPrice || '0'}</span>
+                 <span class="shipping-extra-tag">+ Shipping Extra</span>
+              </div>
+            </div>
+
+            <div class="pincode-widget">
+              <label style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Check Delivery Rates & ETA</label>
+              <div class="pincode-row-inputs">
+                <input type="text" class="pincode-input" id="input-pin-${d.id}" placeholder="Enter 6-digit Pincode">
+                <button type="button" class="pincode-btn" onclick="studio.execClientPincodeCheck('${d.id}')">Verify</button>
+              </div>
+              <div id="feedback-pin-${d.id}" style="margin-top:4px; display:none;"></div>
+            </div>
+          `;
+          anchor.appendChild(card);
+        });
+      },
+
+      async execClientPincodeCheck(listingId) {
+        const pinVal = document.getElementById(`input-pin-${listingId}`).value.trim();
+        const feedbackNode = document.getElementById(`feedback-pin-${listingId}`);
+        const priceBoxNode = document.getElementById(`price-box-${listingId}`);
+
+        if (!pinVal || pinVal.length < 5) return alert("Please specify a valid shipping delivery location area pincode.");
+
+        const d = await DB.operation('drafts', 'readonly', 'get', listingId);
+        if (!d) return;
+
+        FavoritesClient.logPincodeRequest(listingId, pinVal);
+        feedbackNode.style.display = "block";
+        const ratesTable = d.pincode_rates || {};
+        
+        if (ratesTable[pinVal] !== undefined) {
+          const approvedFee = parseFloat(ratesTable[pinVal]) || 0;
+          const totalOut = (parseFloat(d.consumerPrice) || 0) + approvedFee;
+          feedbackNode.className = "pincode-feedback feedback-verified";
+          feedbackNode.innerText = `✓ Pincode Rate Verified: Shipping ₹${approvedFee}`;
+          priceBoxNode.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <span class="price-tag" style="color:var(--accent);">₹${totalOut} Total</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">(Base Price ₹${d.consumerPrice} + Approved Shipping ₹${approvedFee})</span>
+            </div>
+          `;
+        } else {
+          feedbackNode.className = "pincode-feedback feedback-pending";
+          feedbackNode.innerText = "⏳ Shipping rate verification requested. Check back in 48 hours.";
+          priceBoxNode.innerHTML = `
+            <div style="display:flex; align-items:baseline; gap:6px;">
+               <span class="price-tag">₹${d.consumerPrice || '0'}</span>
+               <span class="shipping-extra-tag">+ Shipping Extra</span>
+            </div>
+          `;
+        }
+      },
+
+      handleCustomerLikeTap(id, element) {
+        FavoritesClient.toggleLocalFavorite(id);
+        element.classList.toggle('is-active-favorite');
+        this.refreshFavoritesIndicatorState();
+      },
+
+      refreshFavoritesIndicatorState() {
+        const cta = document.getElementById('nav-whatsapp-sync-cta');
+        if (!cta) return;
+        if (this.activeViewName !== 'customer') {
+          cta.style.display = 'none';
+          return;
+        }
+        const count = FavoritesClient.fetchStoredFavorites().length;
+        if (count > 0) {
+          cta.innerText = `Inquire Likes (${count})`;
+          cta.style.display = 'block';
+        } else {
+          cta.style.display = 'none';
+        }
+      },
+
+      async generateWhatsAppIntent() {
+        const likes = FavoritesClient.fetchStoredFavorites();
+        if (likes.length === 0) return;
+        let txt = "Hi! I am browsing your catalogue view and want to inquire about these design patterns:\n\n";
+        for (const id of likes) {
+          const d = await DB.operation('drafts', 'readonly', 'get', id);
+          if (d) txt += `📌 *${d.title}*\n   Retail Price: ₹${d.consumerPrice} + Shipping Extra\n\n`;
+        }
+        txt += "Here is my delivery pincode to check verified rates: [Enter Pincode]";
+        window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
+      },
+
+      async fastSkipItem(id) {
+        const d = await DB.operation('drafts', 'readonly', 'get', id);
+        if (!d) return;
+        d.status = 'Rejected'; d.decision = 'Rejected';
+        d.updatedAt = new Date().toISOString();
+        await DB.operation('drafts', 'readwrite', 'put', d);
+        this.renderFeedTimeline();
+      },
+
+      async showCuratorDrawer(id) {
+        const d = await DB.operation('drafts', 'readonly', 'get', id);
+        if (!d) return;
+        this.activeDraftRecord = d;
+        this.temporaryPincodeCache = { ...(d.pincode_rates || {}) };
+        
+        // SPRINT 9.1: Load existing images from database record into cache
+        this.temporaryImagesCache = [...(d.mediaIds || [])];
+
+        document.getElementById('curate-draft-id').value = d.id;
+        document.getElementById('curate-title').value = d.title || '';
+        document.getElementById('curate-base-price').value = d.basePrice || '';
+        document.getElementById('curate-consumer-price').value = d.consumerPrice || '';
+        
+        document.getElementById('curate-description').value = d.description || '';
+        document.getElementById('curate-category').value = d.category || '';
+        document.getElementById('curate-collection').value = d.collection || '';
+        document.getElementById('curate-status').value = d.status;
+        document.getElementById('curate-decision').value = d.decision;
+        document.getElementById('curate-raw-text').value = d.rawText || '';
+
+        document.getElementById('matrix-pincode-input').value = '';
+        document.getElementById('matrix-rate-input').value = '';
+
+        this.renderDrawerPincodeMatrixUI();
+        this.renderDrawerImagesPreviewUI(); // SPRINT 9.1: Trigger preview UI build
+
+        const tbody = document.getElementById('drawer-attributes-tbody');
+        if (tbody) {
+          tbody.innerHTML = '';
+          if (d.customAttributes) {
+            for (const [key, val] of Object.entries(d.customAttributes)) {
+              this.injectMatrixRowHTML(key, val);
+            }
+          }
+        }
+
+        const drawer = document.getElementById('curation-drawer');
+        if (drawer) drawer.classList.add('overlay-open');
+      },
+
+      renderDrawerPincodeMatrixUI() {
+        const tbody = document.getElementById('drawer-pincode-matrix-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        for (const [pin, rate] of Object.entries(this.temporaryPincodeCache)) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="font-weight:bold; color:var(--warning);">${pin}</td>
+            <td style="color:var(--accent);">₹${rate}</td>
+            <td><button type="button" class="remove-matrix-row-btn" onclick="studio.deletePincodeOverrideRow('${pin}')">×</button></td>
+          `;
+          tbody.appendChild(tr);
+        }
+      },
+
+      addPincodeOverrideRow() {
+        const pinInput = document.getElementById('matrix-pincode-input');
+        const rateInput = document.getElementById('matrix-rate-input');
+        const pin = pinInput.value.trim();
+        const rate = parseFloat(rateInput.value) || 0;
+        if (!pin || rate <= 0) return alert("Specify valid verification matrix arguments.");
+        this.temporaryPincodeCache[pin] = rate;
+        pinInput.value = ''; rateInput.value = '';
+        this.renderDrawerPincodeMatrixUI();
+      },
+
+      deletePincodeOverrideRow(pin) {
+        delete this.temporaryPincodeCache[pin];
+        this.renderDrawerPincodeMatrixUI();
+      },
+
+      injectMatrixRowHTML(key = '', val = '') {
+        const tbody = document.getElementById('drawer-attributes-tbody');
+        if (!tbody) return;
+        const tr = document.createElement('tr');
+        tr.className = 'matrix-row';
+        tr.innerHTML = `
+          <td><input type="text" class="native-input style-attr-key" style="padding:10px;" value="${key}" placeholder="Label"></td>
+          <td><input type="text" class="native-input style-attr-val" style="padding:10px;" value="${val}" placeholder="Value"></td>
+          <td><button type="button" class="remove-matrix-row-btn" onclick="this.closest('tr').remove()">×</button></td>
+        `;
+        tbody.appendChild(tr);
+      },
+
+      appendBlankAttributeRow() { this.injectMatrixRowHTML('', ''); },
+
+      syncMarkupMath() {
+        const costInput = document.getElementById('curate-base-price');
+        const consumerInput = document.getElementById('curate-consumer-price');
+        if (!costInput || !consumerInput) return;
+        const cost = parseFloat(costInput.value) || 0;
+        consumerInput.value = Math.round(cost * 1.25);
+      },
+
+      async drawerSaveAndTrain() {
+        if (!this.activeDraftRecord) return;
+
+        let customAttributes = {};
+        const rows = document.querySelectorAll('.matrix-row');
+        rows.forEach(tr => {
+          const keyNode = tr.querySelector('.style-attr-key');
+          const valNode = tr.querySelector('.style-attr-val');
+          if (keyNode && valNode) {
+            const k = keyNode.value.trim().toLowerCase();
+            const v = valNode.value.trim();
+            if (k) customAttributes[k] = v;
+          }
+        });
+
+        const newBasePrice = parseFloat(document.getElementById('curate-base-price').value) || 0;
+        if (newBasePrice !== this.activeDraftRecord.basePrice) {
+          await LearningParser.learnCorrection(this.activeDraftRecord.supplierId, this.activeDraftRecord.rawText, 'price', newBasePrice);
+        }
+
+        const updated = {
+          ...this.activeDraftRecord,
+          title: document.getElementById('curate-title').value,
+          basePrice: newBasePrice,
+          consumerPrice: parseFloat(document.getElementById('curate-consumer-price').value) || 0,
+          pincode_rates: this.temporaryPincodeCache,
+          mediaIds: this.temporaryImagesCache, // SPRINT 9.1: Save image Base64 records to database
+          description: document.getElementById('curate-description').value,
+          category: document.getElementById('curate-category').value,
+          collection: document.getElementById('curate-collection').value,
+          status: document.getElementById('curate-status').value,
+          decision: document.getElementById('curate-decision').value,
+          customAttributes: customAttributes,
+          updatedAt: new Date().toISOString()
+        };
+
+        await DB.operation('drafts', 'readwrite', 'put', updated);
+        this.hideCuratorDrawer();
+      },
+
+      async drawerRejectSkip() {
+        if (!this.activeDraftRecord) return;
+        this.activeDraftRecord.status = 'Rejected'; this.activeDraftRecord.decision = 'Rejected';
+        this.activeDraftRecord.updatedAt = new Date().toISOString();
+        await DB.operation('drafts', 'readwrite', 'put', this.activeDraftRecord);
+        this.hideCuratorDrawer();
+      },
+
+      hideCuratorDrawer() {
+        this.activeDraftRecord = null;
+        this.temporaryImagesCache = [];
+        const drawer = document.getElementById('curation-drawer');
+        if (drawer) drawer.classList.remove('overlay-open');
+        this.renderFeedTimeline();
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => studio.start());
+  </script>
+</body>
+</html>
