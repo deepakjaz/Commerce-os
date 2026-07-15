@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Commerce OS - Sprint 9.1 Complete Multi-Media Core</title>
+  <title>Commerce OS - Sprint 9.2 Architecture Core</title>
   <style>
     :root {
       --bg-primary: #000000;      /* Pure OLED Black */
@@ -95,7 +95,7 @@
       overflow: hidden;
     }
 
-    /* FIXED MULTI-IMAGE HORIZONTAL SCROLL DECK */
+    /* HORIZONTAL SCROLL DECK - FIXED TO NOT CROP PATTERNS */
     .card-media-gallery {
       width: 100%;
       display: none; 
@@ -108,14 +108,15 @@
     .card-media-gallery::-webkit-scrollbar { display: none; }
     
     .card-media-gallery img {
-      width: 85%;
+      width: 90%;
       flex-shrink: 0;
       height: 280px;
-      object-fit: cover;
+      object-fit: contain; /* Enforces full image visibility without cropping */
       border-radius: 10px;
       scroll-snap-align: start;
-      background: #000;
+      background: #000000; /* Pure black backdrop matrix padding */
       border: 1px solid var(--border);
+      cursor: zoom-in;
     }
 
     .feed-card-header { display: flex; justify-content: space-between; align-items: center; }
@@ -194,6 +195,7 @@
     .heart-like-toggle.is-active-favorite { color: #ff2d55; transform: scale(1.15); }
     .brand-pill { font-size: 0.75rem; font-weight: 600; background: var(--bg-active); padding: 4px 12px; border-radius: 20px; color: var(--text-muted); align-self: flex-start; }
 
+    /* OVERLAY SYSTEM CONTROLS */
     .fullscreen-overlay {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -209,34 +211,47 @@
     .editor-actions-bar { padding: 16px; border-top: 1px solid var(--border); background: var(--bg-surface); display: grid; grid-template-columns: 1fr 2fr; gap: 12px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); flex-shrink: 0; }
 
     .drawer-media-uploader {
-      background: var(--bg-primary);
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      margin-bottom: 16px;
-      cursor: pointer;
-      position: relative;
+      background: var(--bg-primary); border: 2px dashed var(--border); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 16px; cursor: pointer; position: relative;
     }
-    .drawer-media-preview-container {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .drawer-preview-thumb {
-      width: 100%;
-      aspect-ratio: 1;
-      object-fit: cover;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
+    .drawer-media-preview-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .drawer-preview-thumb { width: 100%; aspect-ratio: 1; object-fit: contain; background:#000; border-radius: 8px; border: 1px solid var(--border); }
 
     .matrix-editor-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
     .matrix-editor-table th { text-align: left; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; padding-bottom: 6px; }
     .matrix-editor-table td { padding: 4px 0; }
     .remove-matrix-row-btn { background: none; border: none; color: var(--danger); font-size: 1.4rem; cursor: pointer; padding: 0 8px; }
     .add-matrix-row-trigger { background: var(--bg-primary); border: 1px dashed var(--border); padding: 12px; border-radius: 8px; text-align: center; font-size: 0.8rem; color: var(--accent); cursor: pointer; font-weight: bold; margin-bottom: 16px; }
+
+    /* NATIVE-STYLE GALLERY PINCH TO ZOOM THEATER THEME */
+    #gallery-theater-overlay {
+      position: absolute;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.98);
+      z-index: 200;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      touch-action: none; /* Block browser base zoom handlers */
+    }
+    .theater-close-btn {
+      position: absolute;
+      top: 20px; right: 20px;
+      background: rgba(255,255,255,0.15);
+      color: white; border: none; border-radius: 50%;
+      width: 40px; height: 40px; font-size: 1.2rem;
+      font-weight: bold; cursor: pointer; z-index: 210;
+    }
+    #theater-zoom-viewport {
+      width: 100%; height: 100%;
+      display: flex; justify-content: center; align-items: center;
+      overflow: hidden;
+    }
+    #theater-zoom-image {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain;
+      transform-origin: center center;
+      transition: transform 0.05s ease-out;
+    }
 
     .bottom-tabs {
       position: absolute;
@@ -263,15 +278,17 @@
 
   <div class="phone-shell">
     
+    <!-- HEADER PANEL -->
     <header class="app-header">
       <h1 id="view-title-label">Active Feed</h1>
       <span id="feed-badge-counter" style="font-size: 0.75rem; background: var(--accent); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 800;">0</span>
       <button type="button" class="chip" id="nav-whatsapp-sync-cta" style="background:var(--accent); color:#000; border:none; display:none; font-size:0.75rem; padding:6px 12px;" onclick="studio.generateWhatsAppIntent()">Inquire Likes (0)</button>
     </header>
 
+    <!-- MAIN SCROLLABLE CONTENT BLOCK -->
     <main class="view-deck">
       
-      <!-- VIEWPORT 1: RESELLER FEED WORKSPACE -->
+      <!-- VIEWPORT 1: RESELLER STUDIO DECK -->
       <section id="pane-feed" class="app-view active-view">
         <div class="export-panel-container" id="reseller-export-panel">
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -300,7 +317,7 @@
         <div id="feed-cards-anchor" class="feed-container" style="margin-top: 16px;"></div>
       </section>
 
-      <!-- VIEWPORT 2: INGESTION STREAMS -->
+      <!-- VIEWPORT 2: RAW TEXT INGESTION -->
       <section id="pane-intake" class="app-view">
         <form id="intake-form" onsubmit="studio.handleIntakeSubmit(event)">
           <div class="intake-meta-row">
@@ -323,14 +340,14 @@
 
           <div class="form-group">
             <label class="form-label">Raw Sourced Message Content Block</label>
-            <textarea id="intake-raw-text" rows="12" placeholder="Paste unorganized text stream directly from the supplier chat... Use '$' or '+' anywhere to trigger dynamic pin-code calculations."></textarea>
+            <textarea id="intake-raw-text" rows="12" placeholder="Paste unorganized text stream directly..."></textarea>
           </div>
 
           <button type="submit" class="btn action-btn" style="background: var(--text-primary); color: var(--bg-primary); width:100%; margin-top: 12px;">Process Stream Ingestion</button>
         </form>
       </section>
 
-      <!-- VIEWPORT 3: CUSTOMER HUB STOREFRONT -->
+      <!-- VIEWPORT 3: WHITE-LABELED CUSTOMER STOREFRONT -->
       <section id="pane-customer" class="app-view">
         <div id="customer-cards-anchor" class="feed-container"></div>
       </section>
@@ -347,7 +364,7 @@
         <form id="curate-form" onsubmit="event.preventDefault();">
           <input type="hidden" id="curate-draft-id">
           
-          <!-- IMAGE UPLOADER REGION -->
+          <!-- ATTACH DESIGN MULTI IMAGES BAR -->
           <div class="drawer-media-uploader" onclick="document.getElementById('drawer-hidden-file-input').click();">
             <span style="font-size:0.8rem; font-weight:bold; color:var(--accent);">📸 Tap to Upload Pattern Images</span>
             <input type="file" id="drawer-hidden-file-input" accept="image/*" multiple style="display:none;" onchange="studio.handleDrawerImageUpload(event)">
@@ -370,7 +387,7 @@
             </div>
           </div>
 
-          <!-- APPROVED PINCODE OVERRIDE MATRIX -->
+          <!-- APPROVED PINCODE MATRIX OVERRIDES -->
           <div class="form-group" style="margin-bottom: 16px; border: 1px solid var(--border); padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.2);">
             <label class="form-label" style="color: var(--accent);">Approved Supplier Rates Matrix</label>
             <div style="display:flex; gap:8px; margin-bottom: 8px;">
@@ -395,7 +412,6 @@
             <textarea id="curate-description" rows="4" style="width:100%; background:var(--bg-card); border:1px solid var(--border); color:var(--text-primary); padding:10px; border-radius:10px; font-size:0.95rem; outline:none;"></textarea>
           </div>
 
-          <!-- SCHEMALESS MATRIX INPUT MANAGER -->
           <div class="form-group" style="margin-bottom: 12px;">
             <label class="form-label">Dynamic Spec Fields Matrix (e.g. Fabric, Sizes, Weight)</label>
             <table class="matrix-editor-table">
@@ -442,7 +458,7 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Raw Sourced Supplier Text (Training Matrix View)</label>
+            <label class="form-label">Raw Sourced Supplier Text</label>
             <textarea id="curate-raw-text" rows="5" readonly style="font-family: monospace; font-size: 0.8rem; background: var(--bg-primary); opacity: 0.65;"></textarea>
           </div>
         </form>
@@ -453,7 +469,7 @@
       </div>
     </section>
 
-    <!-- FULL SCREEN SUPPLIER MANAGEMENT OVERLAY PANEL -->
+    <!-- REGISTER AND DIRECTORY OVERLAY FOR SUPPLIERS -->
     <section class="fullscreen-overlay" id="supplier-manager-drawer">
       <div class="overlay-header">
         <h2 style="font-size: 1.1rem; font-weight: 700;">Manage Suppliers</h2>
@@ -472,7 +488,15 @@
       </div>
     </section>
 
-    <!-- NAVIGATION TABS -->
+    <!-- NATIVE MULTI TOUCH PINCH GALLERY INTERACTIVE HOOK (SPRINT 9.2) -->
+    <div id="gallery-theater-overlay">
+      <button class="theater-close-btn" onclick="theater.dismiss()">×</button>
+      <div id="theater-zoom-viewport">
+        <img id="theater-zoom-image" src="" alt="Zoom Core View">
+      </div>
+    </div>
+
+    <!-- STICKY NAVIGATION BAR -->
     <nav class="bottom-tabs">
       <div class="tab-item tab-active" id="nav-feed" onclick="studio.navigate('feed')">
         <span class="tab-icon">📱</span>
@@ -491,16 +515,23 @@
   </div>
 
   <script>
+    /**
+     * STORAGE ENGINE OPTIMIZATION MATRIX (SPRINT 9.2 DESIGN DECOUPLING LAYER)
+     */
     const DB = {
       instance: null,
       init() {
         return new Promise((resolve, reject) => {
-          const req = indexedDB.open('CommerceOS_Consolidated_Core_V4', 1);
+          // Open V5 storage variant to ensure database structural clarity
+          const req = indexedDB.open('CommerceOS_Storage_Optimized_V5', 1);
           req.onupgradeneeded = (e) => {
             const d = e.target.result;
             if (!d.objectStoreNames.contains('suppliers')) d.createObjectStore('suppliers', { keyPath: 'id' });
             if (!d.objectStoreNames.contains('rules')) d.createObjectStore('rules', { keyPath: 'supplierId' });
             if (!d.objectStoreNames.contains('drafts')) d.createObjectStore('drafts', { keyPath: 'id' });
+            
+            // Sprint 9.2: Dedicated image warehouse room
+            if (!d.objectStoreNames.contains('media_blocks')) d.createObjectStore('media_blocks', { keyPath: 'draftId' });
           };
           req.onsuccess = (e) => { this.instance = e.target.result; resolve(); };
           req.onerror = (e) => reject(e.target.error);
@@ -518,6 +549,70 @@
       }
     };
 
+    /**
+     * NATIVE-STYLE GALLERY MULTI TOUCH CONTROLLER MATRIX
+     */
+    const theater = {
+      scale: 1, lastScale: 1, startDistance: 0, active: false,
+      
+      init() {
+        const viewNode = document.getElementById('theater-zoom-viewport');
+        if (!viewNode) return;
+
+        // Two-Finger Gesture Listeners
+        viewNode.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 2) {
+            this.active = true;
+            this.startDistance = this.getHypotenuseDistance(e.touches[0], e.touches[1]);
+            this.lastScale = this.scale;
+          }
+        }, { passive: true });
+
+        viewNode.addEventListener('touchmove', (e) => {
+          if (this.active && e.touches.length === 2) {
+            const currentDist = this.getHypotenuseDistance(e.touches[0], e.touches[1]);
+            if (this.startDistance > 0) {
+              const deltaFactor = currentDist / this.startDistance;
+              this.scale = Math.min(Math.max(this.lastScale * deltaFactor, 0.8), 5); // Limit scaling threshold bounds
+              this.applyTransform();
+            }
+          }
+        }, { passive: true });
+
+        viewNode.addEventListener('touchend', (e) => {
+          if (e.touches.length < 2) {
+            this.active = false;
+            this.lastScale = this.scale;
+            if(this.scale < 1) { this.scale = 1; this.applyTransform(); } // Auto snap-back normalization
+          }
+        }, { passive: true });
+      },
+
+      getHypotenuseDistance(t1, t2) {
+        return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      },
+
+      applyTransform() {
+        const img = document.getElementById('theater-zoom-image');
+        if (img) img.style.transform = `scale(${this.scale})`;
+      },
+
+      launch(imgSrc) {
+        const overlay = document.getElementById('gallery-theater-overlay');
+        const img = document.getElementById('theater-zoom-image');
+        if (!overlay || !img) return;
+        
+        this.scale = 1; this.lastScale = 1; this.applyTransform();
+        img.src = imgSrc;
+        overlay.style.display = 'flex';
+      },
+
+      dismiss() {
+        const overlay = document.getElementById('gallery-theater-overlay');
+        if (overlay) overlay.style.display = 'none';
+      }
+    };
+
     const LearningParser = {
       async executeParse(supplierId, rawText) {
         if (!rawText) return { derivedPrice: 0, customerDescription: '', customAttributes: {} };
@@ -526,19 +621,13 @@
 
         if (!rule) {
           rule = {
-            supplierId: supplierId,
-            priceAnchors: ['rate :', 'rate:', 'rate', 'price', 'prc'],
-            attributeAnchors: {
-              'fabric': ['fabric', 'fabrics', 'top :'],
-              'sizes': ['size', 'size:', 'sizes'],
-              'weight': ['weight', 'weight :', 'weight:']
-            }
+            supplierId: supplierId, priceAnchors: ['rate :', 'rate:', 'rate', 'price', 'prc'],
+            attributeAnchors: { 'fabric': ['fabric', 'fabrics', 'top :'], 'sizes': ['size', 'size:', 'sizes'], 'weight': ['weight', 'weight :', 'weight:'] }
           };
         }
 
         const lines = rawText.split('\n').map(l => l.trim());
-        let detectedPrice = 0;
-        let customAttributes = {};
+        let detectedPrice = 0; let customAttributes = {};
 
         for (const line of lines) {
           if (!line) continue;
@@ -586,12 +675,8 @@
             if (line.includes(matchString)) {
               const prefix = line.split(matchString)[0].trim();
               if (prefix.length > 1) {
-                if (fieldKey === 'price') {
-                  if (!rule.priceAnchors.includes(prefix)) rule.priceAnchors.unshift(prefix);
-                } else {
-                  if (!rule.attributeAnchors[fieldKey]) rule.attributeAnchors[fieldKey] = [];
-                  if (!rule.attributeAnchors[fieldKey].includes(prefix)) rule.attributeAnchors[fieldKey].unshift(prefix);
-                }
+                if (fieldKey === 'price') { if (!rule.priceAnchors.includes(prefix)) rule.priceAnchors.unshift(prefix); } 
+                else { if (!rule.attributeAnchors[fieldKey]) rule.attributeAnchors[fieldKey] = []; if (!rule.attributeAnchors[fieldKey].includes(prefix)) rule.attributeAnchors[fieldKey].unshift(prefix); }
               }
             }
           }
@@ -601,15 +686,11 @@
     };
 
     const FavoritesClient = {
-      cacheKey: 'CommerceOS_Final_User_Likes_V2',
-      pincodeKey: 'CommerceOS_Customer_Pincode_Queries',
+      cacheKey: 'CommerceOS_Final_User_Likes_V2', pincodeKey: 'CommerceOS_Customer_Pincode_Queries',
       toggleLocalFavorite(listingId) {
         let currentArray = this.fetchStoredFavorites();
-        if (currentArray.includes(listingId)) {
-          currentArray = currentArray.filter(id => id !== listingId);
-        } else {
-          currentArray.push(listingId);
-        }
+        if (currentArray.includes(listingId)) { currentArray = currentArray.filter(id => id !== listingId); } 
+        else { currentArray.push(listingId); }
         localStorage.setItem(this.cacheKey, JSON.stringify(currentArray));
         return currentArray;
       },
@@ -630,34 +711,24 @@
     };
 
     const studio = {
-      currentFilter: 'all',
-      activeDraftRecord: null,
-      stickySupplierId: 'sup_1',
-      suppliersCache: {},
-      activeViewName: 'feed',
-      temporaryPincodeCache: {},
-      temporaryImagesCache: [],
+      currentFilter: 'all', activeDraftRecord: null, stickySupplierId: 'sup_1', suppliersCache: {}, activeViewName: 'feed', temporaryPincodeCache: {}, temporaryImagesCache: [],
 
       async start() {
         try {
           await DB.init();
+          theater.init(); // Mount touch listeners
           await this.seedSuppliersData();
           await this.loadSuppliersSelectionUI();
           await this.renderFeedTimeline();
           this.initFilterChips();
           this.refreshFavoritesIndicatorState();
-        } catch (err) {
-          console.error(err);
-        }
+        } catch (err) { console.error(err); }
       },
 
       async seedSuppliersData() {
         const data = await DB.operation('suppliers', 'readonly', 'getAll');
         if (data.length === 0) {
-          const seed = [
-            { id: 'sup_1', name: 'Kumbh Textiles (Surat HQ)' },
-            { id: 'sup_2', name: 'Shabeena Embroidery Wholesalers' }
-          ];
+          const seed = [{ id: 'sup_1', name: 'Kumbh Textiles (Surat HQ)' }, { id: 'sup_2', name: 'Shabeena Embroidery Wholesalers' }];
           for (const s of seed) await DB.operation('suppliers', 'readwrite', 'put', s);
         }
         const freshList = await DB.operation('suppliers', 'readonly', 'getAll');
@@ -668,11 +739,7 @@
       async loadSuppliersSelectionUI() {
         const list = await DB.operation('suppliers', 'readonly', 'getAll');
         const selectEl = document.getElementById('intake-supplier-select');
-        if (selectEl) {
-          selectEl.innerHTML = list.map(s => `
-            <option value="${s.id}" ${s.id === this.stickySupplierId ? 'selected' : ''}>${s.name}</option>
-          `).join('');
-        }
+        if (selectEl) { selectEl.innerHTML = list.map(s => `<option value="${s.id}" ${s.id === this.stickySupplierId ? 'selected' : ''}>${s.name}</option>`).join(''); }
       },
 
       initFilterChips() {
@@ -691,74 +758,47 @@
         if (!name || !name.trim()) return;
         const newId = 'sup_' + Date.now();
         await DB.operation('suppliers', 'readwrite', 'put', { id: newId, name: name.trim() });
-        this.suppliersCache[newId] = name.trim();
-        this.stickySupplierId = newId;
-        await this.loadSuppliersSelectionUI();
-        await this.renderFeedTimeline();
+        this.suppliersCache[newId] = name.trim(); this.stickySupplierId = newId;
+        await this.loadSuppliersSelectionUI(); await this.renderFeedTimeline();
       },
 
-      async showSupplierManager() {
-        document.getElementById('supplier-manager-drawer').classList.add('overlay-open');
-        await this.renderSupplierDirectoryList();
-      },
-
-      hideSupplierManager() {
-        document.getElementById('supplier-manager-drawer').classList.remove('overlay-open');
-      },
+      async showSupplierManager() { document.getElementById('supplier-manager-drawer').classList.add('overlay-open'); await this.renderSupplierDirectoryList(); },
+      hideSupplierManager() { document.getElementById('supplier-manager-drawer').classList.remove('overlay-open'); },
 
       async renderSupplierDirectoryList() {
         const directoryContainer = document.getElementById('supplier-directory-list');
         if (!directoryContainer) return;
         const list = await DB.operation('suppliers', 'readonly', 'getAll');
         directoryContainer.innerHTML = '';
-        if (list.length === 0) {
-          directoryContainer.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding: 20px;">Supplier directory empty.</div>';
-          return;
-        }
+        if (list.length === 0) { directoryContainer.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding: 20px;">Supplier directory empty.</div>'; return; }
         list.forEach(sup => {
-          const div = document.createElement('div');
-          div.className = 'supplier-list-item';
-          div.innerHTML = `
-            <div>
-              <span style="font-weight:bold; color:var(--text-primary);">${sup.name}</span>
-            </div>
-            <button type="button" class="chip" style="background:rgba(255, 69, 58, 0.15); color:var(--danger); border:none; font-size:0.75rem;" onclick="studio.deleteSupplierFromManager('${sup.id}')">Delete</button>
-          `;
+          const div = document.createElement('div'); div.className = 'supplier-list-item';
+          div.innerHTML = `<div><span style="font-weight:bold; color:var(--text-primary);">${sup.name}</span></div><button type="button" class="chip" style="background:rgba(255, 69, 58, 0.15); color:var(--danger); border:none; font-size:0.75rem;" onclick="studio.deleteSupplierFromManager('${sup.id}')">Delete</button>`;
           directoryContainer.appendChild(div);
         });
       },
 
       async addSupplierFromManager() {
-        const nameInput = document.getElementById('manager-new-supplier-name');
-        const name = nameInput ? nameInput.value.trim() : '';
+        const nameInput = document.getElementById('manager-new-supplier-name'); const name = nameInput ? nameInput.value.trim() : '';
         if (!name) return alert("Please type a valid company name.");
-        const newId = 'sup_' + Date.now();
-        await DB.operation('suppliers', 'readwrite', 'put', { id: newId, name });
-        this.suppliersCache[newId] = name;
-        if (nameInput) nameInput.value = '';
-        await this.renderSupplierDirectoryList();
-        await this.loadSuppliersSelectionUI();
-        await this.renderFeedTimeline();
+        const newId = 'sup_' + Date.now(); await DB.operation('suppliers', 'readwrite', 'put', { id: newId, name });
+        this.suppliersCache[newId] = name; if (nameInput) nameInput.value = '';
+        await this.renderSupplierDirectoryList(); await this.loadSuppliersSelectionUI(); await this.renderFeedTimeline();
       },
 
       async deleteSupplierFromManager(id) {
-        if (!confirm("Are you sure you want to remove this supplier?")) return;
-        await DB.operation('suppliers', 'readwrite', 'delete', id);
-        delete this.suppliersCache[id];
-        await this.renderSupplierDirectoryList();
-        await this.loadSuppliersSelectionUI();
-        await this.renderFeedTimeline();
+        if (!confirm("Are you sure?")) return;
+        await DB.operation('suppliers', 'readwrite', 'delete', id); delete this.suppliersCache[id];
+        await this.renderSupplierDirectoryList(); await this.loadSuppliersSelectionUI(); await this.renderFeedTimeline();
       },
 
       handleDrawerImageUpload(e) {
         const files = Array.from(e.target.files);
         if (!files.length) return;
-
         files.forEach(file => {
           const reader = new FileReader();
           reader.onload = (event) => {
-            const base64String = event.target.result;
-            this.temporaryImagesCache.push(base64String);
+            this.temporaryImagesCache.push(event.target.result);
             this.renderDrawerImagesPreviewUI();
           };
           reader.readAsDataURL(file);
@@ -767,18 +807,10 @@
 
       renderDrawerImagesPreviewUI() {
         const anchor = document.getElementById('drawer-media-preview-anchor');
-        if (!anchor) return;
-        anchor.innerHTML = '';
+        if (!anchor) return; anchor.innerHTML = '';
         this.temporaryImagesCache.forEach((imgSrc, idx) => {
-          const img = document.createElement('img');
-          img.src = imgSrc;
-          img.className = 'drawer-preview-thumb';
-          img.title = "Tap to remove";
-          img.onclick = (e) => {
-            e.stopPropagation();
-            studio.temporaryImagesCache.splice(idx, 1);
-            studio.renderDrawerImagesPreviewUI();
-          };
+          const img = document.createElement('img'); img.src = imgSrc; img.className = 'drawer-preview-thumb';
+          img.onclick = (e) => { e.stopPropagation(); studio.temporaryImagesCache.splice(idx, 1); studio.renderDrawerImagesPreviewUI(); };
           anchor.appendChild(img);
         });
       },
@@ -786,13 +818,10 @@
       async handleIntakeSubmit(e) {
         e.preventDefault();
         try {
-          const supplierId = document.getElementById('intake-supplier-select').value;
-          this.stickySupplierId = supplierId;
-          const rawTextEl = document.getElementById('intake-raw-text');
-          const rawText = rawTextEl ? rawTextEl.value.trim() : '';
+          const supplierId = document.getElementById('intake-supplier-select').value; this.stickySupplierId = supplierId;
+          const rawTextEl = document.getElementById('intake-raw-text'); const rawText = rawTextEl ? rawTextEl.value.trim() : '';
           const baseMargin = parseFloat(document.getElementById('intake-margin-preset').value);
-
-          if (!rawText) return alert('Please paste supplier description text first.');
+          if (!rawText) return alert('Empty text stream.');
 
           const draftId = 'drf_' + crypto.randomUUID();
           const parsed = await LearningParser.executeParse(supplierId, rawText);
@@ -800,333 +829,209 @@
           const inferredTitle = lines[0] ? lines[0].replace(/[^\w\s]/gi, '').substring(0, 35) : 'Batch Item Design';
 
           await DB.operation('drafts', 'readwrite', 'put', {
-            id: draftId, supplierId, title: inferredTitle,
-            description: parsed.customerDescription, rawText: rawText,
-            basePrice: parsed.derivedPrice || 0,
-            consumerPrice: parsed.derivedPrice ? Math.round(parsed.derivedPrice * baseMargin) : 0,
-            pincode_rates: {},
-            mediaIds: [], 
-            customAttributes: parsed.customAttributes || {},
-            category: parsed.customAttributes['fabric'] || '', 
-            collection: '', decision: 'Pending', status: 'Imported',
+            id: draftId, supplierId, title: inferredTitle, description: parsed.customerDescription, rawText: rawText,
+            basePrice: parsed.derivedPrice || 0, consumerPrice: parsed.derivedPrice ? Math.round(parsed.derivedPrice * baseMargin) : 0,
+            pincode_rates: {}, has_images: false, customAttributes: parsed.customAttributes || {},
+            category: parsed.customAttributes['fabric'] || '', collection: '', decision: 'Pending', status: 'Imported',
             createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
           });
 
           if (rawTextEl) rawTextEl.value = '';
-          await this.renderFeedTimeline();
-          this.navigate('feed');
-        } catch (err) {
-          alert(err.message);
-        }
+          await this.renderFeedTimeline(); this.navigate('feed');
+        } catch (err) { alert(err.message); }
       },
 
       navigate(target) {
         this.activeViewName = target;
         document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active-view'));
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('tab-active'));
-        
-        const counterNode = document.getElementById('feed-badge-counter');
-        const ctaNode = document.getElementById('nav-whatsapp-sync-cta');
+        const counterNode = document.getElementById('feed-badge-counter'); const ctaNode = document.getElementById('nav-whatsapp-sync-cta');
 
         if (target === 'feed') {
-          document.getElementById('pane-feed').classList.add('active-view');
-          document.getElementById('nav-feed').classList.add('tab-active');
+          document.getElementById('pane-feed').classList.add('active-view'); document.getElementById('nav-feed').classList.add('tab-active');
           document.getElementById('view-title-label').innerText = "Studio Feed";
-          if (counterNode) counterNode.style.display = 'block';
-          if (ctaNode) ctaNode.style.display = 'none';
+          if (counterNode) counterNode.style.display = 'block'; if (ctaNode) ctaNode.style.display = 'none';
           this.renderFeedTimeline();
         } else if (target === 'intake') {
-          document.getElementById('pane-intake').classList.add('active-view');
-          document.getElementById('nav-intake').classList.add('tab-active');
+          document.getElementById('pane-intake').classList.add('active-view'); document.getElementById('nav-intake').classList.add('tab-active');
           document.getElementById('view-title-label').innerText = "Capture Batch";
-          if (counterNode) counterNode.style.display = 'none';
-          if (ctaNode) ctaNode.style.display = 'none';
+          if (counterNode) counterNode.style.display = 'none'; if (ctaNode) ctaNode.style.display = 'none';
         } else if (target === 'customer') {
-          document.getElementById('pane-customer').classList.add('active-view');
-          document.getElementById('nav-customer').classList.add('tab-active');
+          document.getElementById('pane-customer').classList.add('active-view'); document.getElementById('nav-customer').classList.add('tab-active');
           document.getElementById('view-title-label').innerText = "Client Hub";
-          if (counterNode) counterNode.style.display = 'none';
-          this.refreshFavoritesIndicatorState();
-          this.renderCustomerCatalogTimeline();
+          if (counterNode) counterNode.style.display = 'none'; this.refreshFavoritesIndicatorState(); this.renderCustomerCatalogTimeline();
         }
       },
 
       async renderFulfillmentExportPanel(drafts) {
-        const tbody = document.getElementById('export-queue-tbody');
-        if (!tbody) return;
-        const loggedRequests = FavoritesClient.fetchPincodeRequests();
-        tbody.innerHTML = '';
-        let dynamicRowsExist = false;
+        const tbody = document.getElementById('export-queue-tbody'); if (!tbody) return;
+        const loggedRequests = FavoritesClient.fetchPincodeRequests(); tbody.innerHTML = ''; let dynamicRowsExist = false;
         for (const draft of drafts) {
           const codes = loggedRequests[draft.id] || [];
           if (codes.length > 0) {
-            dynamicRowsExist = true;
-            const tr = document.createElement('tr');
-            const supplierName = this.suppliersCache[draft.supplierId] || 'Direct Sourced';
-            tr.innerHTML = `
-              <td style="color:var(--text-primary); font-weight:bold;">${supplierName}</td>
-              <td>${draft.title}</td>
-              <td><span style="color:var(--warning); font-weight:bold;">${codes.join(', ')}</span></td>
-            `;
+            dynamicRowsExist = true; const tr = document.createElement('tr'); const supplierName = this.suppliersCache[draft.supplierId] || 'Direct Sourced';
+            tr.innerHTML = `<td style="color:var(--text-primary); font-weight:bold;">${supplierName}</td><td>${draft.title}</td><td><span style="color:var(--warning); font-weight:bold;">${codes.join(', ')}</span></td>`;
             tbody.appendChild(tr);
           }
         }
-        if (!dynamicRowsExist) {
-          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); font-size:0.75rem; padding:10px;">No pending pincode lookups in queue.</td></tr>`;
-        }
+        if (!dynamicRowsExist) tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); font-size:0.75rem; padding:10px;">No pending pincode lookups.</td></tr>`;
       },
 
       async copyBulkPincodeIntent() {
-        const drafts = await DB.operation('drafts', 'readonly', 'getAll');
-        const loggedRequests = FavoritesClient.fetchPincodeRequests();
-        let textBlock = "Hello! Please verify the shipping rates and ETA for these item lookups:\n\n";
-        let analyticalMatchesFound = false;
+        const drafts = await DB.operation('drafts', 'readonly', 'getAll'); const loggedRequests = FavoritesClient.fetchPincodeRequests();
+        let textBlock = "Hello! Please verify the shipping rates:\n\n"; let analyticalMatchesFound = false;
         for (const d of drafts) {
           const codes = loggedRequests[d.id] || [];
-          if (codes.length > 0) {
-            analyticalMatchesFound = true;
-            textBlock += `📌 Design: *${d.title}*\n   Pincodes to check: ${codes.join(', ')}\n\n`;
-          }
+          if (codes.length > 0) { analyticalMatchesFound = true; textBlock += `📌 Design: *${d.title}*\n   Pincodes: ${codes.join(', ')}\n\n`; }
         }
-        textBlock += "Please let me know so I can complete the dynamic catalog entries. Thanks!";
-        if (!analyticalMatchesFound) return alert("Your verification line queue is currently empty.");
-        navigator.clipboard.writeText(textBlock);
-        alert("Fulfillment ticket copied to clipboard!");
+        if (!analyticalMatchesFound) return alert("Queue empty.");
+        navigator.clipboard.writeText(textBlock); alert("Copied!");
       },
 
       async renderFeedTimeline() {
         if (!DB.instance) return;
-        const anchor = document.getElementById('feed-cards-anchor');
-        if (!anchor) return;
-        
+        const anchor = document.getElementById('feed-cards-anchor'); if (!anchor) return;
         const drafts = await DB.operation('drafts', 'readonly', 'getAll');
         await this.renderFulfillmentExportPanel(drafts);
 
         const filtered = drafts.filter(d => this.currentFilter === 'all' || d.status === this.currentFilter);
-        const counter = document.getElementById('feed-badge-counter');
-        if (counter) counter.innerText = filtered.length;
-
-        anchor.innerHTML = '';
-        if (filtered.length === 0) {
-          anchor.innerHTML = `<div class="empty-state"><h3>Workspace Stream Clear</h3><p>Tap 'New Batch' to ingest supplier updates.</p></div>`;
-          return;
-        }
+        document.getElementById('feed-badge-counter').innerText = filtered.length; anchor.innerHTML = '';
+        if (filtered.length === 0) { anchor.innerHTML = `<div class="empty-state"><h3>Workspace Stream Clear</h3></div>`; return; }
 
         filtered.sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
-        filtered.forEach(d => {
-          const card = document.createElement('div');
-          card.className = 'feed-card';
+        for (const d of filtered) {
+          const card = document.createElement('div'); card.className = 'feed-card';
           const name = this.suppliersCache[d.supplierId] || 'Direct Sourced';
-
           let attributeChipsHtml = '';
-          if (d.customAttributes) {
-            for (const [key, value] of Object.entries(d.customAttributes)) {
-              if (value) attributeChipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`;
-            }
-          }
+          if (d.customAttributes) { for (const [key, value] of Object.entries(d.customAttributes)) { if (value) attributeChipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`; } }
 
-          // RENDER SCROLLABLE HORIZONTAL MULTI-IMAGE CONTAINER (RESELLER FEED)
+          // Sprint 9.2: Memory Optimised Image Block Fetch Hook
           let mediaGalleryHtml = '';
-          if (d.mediaIds && d.mediaIds.length > 0) {
-            const imgs = d.mediaIds.map(src => `<img src="${src}" alt="Pattern Preview">`).join('');
-            mediaGalleryHtml = `
-              <div class="card-media-gallery" style="display:flex;">
-                ${imgs}
-              </div>
-            `;
+          if (d.has_images) {
+            const mediaBlock = await DB.operation('media_blocks', 'readonly', 'get', d.id);
+            if (mediaBlock && mediaBlock.images && mediaBlock.images.length > 0) {
+              const imgs = mediaBlock.images.map(src => `<img src="${src}" alt="Pattern" onclick="theater.launch('${src}')">`).join('');
+              mediaGalleryHtml = `<div class="card-media-gallery" style="display:flex;">${imgs}</div>`;
+            }
           }
 
           card.innerHTML = `
             ${mediaGalleryHtml}
-            <div class="feed-card-header">
-              <span class="supplier-pill">From: ${name}</span>
-              <span class="status-badge-verification">${d.status}</span>
-            </div>
-            
-            <div class="feed-card-body">
-              <h3>${d.title || 'Untitled Item'}</h3>
-              <p>${(d.description || '').replace(/\n/g, '<br>')}</p>
-              <div class="dynamic-attributes-container">${attributeChipsHtml}</div>
-            </div>
-
-            <div class="feed-card-pricing" style="margin-top: 4px;">
-              <span class="price-tag">Retail: ₹${d.consumerPrice || '0'}</span>
-              <span class="price-base">Cost: ₹${d.basePrice || '0'}</span>
-            </div>
-
+            <div class="feed-card-header"><span class="supplier-pill">From: ${name}</span><span class="status-badge-verification">${d.status}</span></div>
+            <div class="feed-card-body"><h3>${d.title || 'Untitled'}</h3><p>${(d.description || '').replace(/\n/g, '<br>')}</p><div class="dynamic-attributes-container">${attributeChipsHtml}</div></div>
+            <div class="feed-card-pricing" style="margin-top: 4px;"><span class="price-tag">Retail: ₹${d.consumerPrice || '0'}</span><span class="price-base">Cost: ₹${d.basePrice || '0'}</span></div>
             <div class="feed-quick-actions">
               <button type="button" class="action-btn btn-reject" onclick="studio.fastSkipItem('${d.id}')">Skip</button>
               <button type="button" class="action-btn btn-edit-curate" onclick="studio.showCuratorDrawer('${d.id}')">Edit</button>
             </div>
           `;
           anchor.appendChild(card);
-        });
+        }
       },
 
       async renderCustomerCatalogTimeline() {
         if (!DB.instance) return;
-        const anchor = document.getElementById('customer-cards-anchor');
-        if (!anchor) return;
-        
+        const anchor = document.getElementById('customer-cards-anchor'); if (!anchor) return;
         const drafts = await DB.operation('drafts', 'readonly', 'getAll');
-        const publicListings = drafts.filter(d => d.status === 'Ready');
-        const activeLikes = FavoritesClient.fetchStoredFavorites();
+        const publicListings = drafts.filter(d => d.status === 'Ready'); const activeLikes = FavoritesClient.fetchStoredFavorites();
 
         anchor.innerHTML = '';
-        if (publicListings.length === 0) {
-          anchor.innerHTML = `<div class="empty-state"><h3>Catalog Empty</h3><p>Ready to Share view stream empty.</p></div>`;
-          return;
-        }
-
+        if (publicListings.length === 0) { anchor.innerHTML = `<div class="empty-state"><h3>Catalog Empty</h3></div>`; return; }
         publicListings.sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
-        publicListings.forEach(d => {
-          const card = document.createElement('div');
-          card.className = 'feed-card';
-          const isFav = activeLikes.includes(d.id);
-
+        for (const d of publicListings) {
+          const card = document.createElement('div'); card.className = 'feed-card'; const isFav = activeLikes.includes(d.id);
           let chipsHtml = '';
-          if (d.customAttributes) {
-            for (const [key, value] of Object.entries(d.customAttributes)) {
-              if (value) chipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`;
-            }
-          }
+          if (d.customAttributes) { for (const [key, value] of Object.entries(d.customAttributes)) { if (value) chipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`; } }
 
-          // RENDER SCROLLABLE HORIZONTAL MULTI-IMAGE CONTAINER (CUSTOMER STOREFRONT)
+          // Sprint 9.2: Customer View decoupled image reference draw
           let mediaGalleryHtml = '';
-          if (d.mediaIds && d.mediaIds.length > 0) {
-            const imgs = d.mediaIds.map(src => `<img src="${src}" alt="Catalog Pattern Image">`).join('');
-            mediaGalleryHtml = `
-              <div class="card-media-gallery" style="display:flex;">
-                ${imgs}
-              </div>
-            `;
+          if (d.has_images) {
+            const mediaBlock = await DB.operation('media_blocks', 'readonly', 'get', d.id);
+            if (mediaBlock && mediaBlock.images && mediaBlock.images.length > 0) {
+              const imgs = mediaBlock.images.map(src => `<img src="${src}" alt="Catalog Pattern Image" onclick="theater.launch('${src}')">`).join('');
+              mediaGalleryHtml = `<div class="card-media-gallery" style="display:flex;">${imgs}</div>`;
+            }
           }
 
           card.innerHTML = `
             ${mediaGalleryHtml}
             <div class="heart-like-toggle ${isFav ? 'is-active-favorite' : ''}" onclick="studio.handleCustomerLikeTap('${d.id}', this)">♥</div>
             <div class="brand-pill">Exclusive Catalog</div>
-            
-            <div class="feed-card-body">
-              <h3>${d.title || 'Design Pattern'}</h3>
-              <p>${(d.description || '').replace(/\n/g, '<br>')}</p>
-              <div class="dynamic-attributes-container">${chipsHtml}</div>
-            </div>
-
-            <div class="feed-card-pricing" id="price-box-${d.id}" style="margin-top: 4px;">
-              <div style="display:flex; align-items:baseline; gap:6px;">
-                 <span class="price-tag">₹${d.consumerPrice || '0'}</span>
-                 <span class="shipping-extra-tag">+ Shipping Extra</span>
-              </div>
-            </div>
-
+            <div class="feed-card-body"><h3>${d.title || 'Design Pattern'}</h3><p>${(d.description || '').replace(/\n/g, '<br>')}</p><div class="dynamic-attributes-container">${chipsHtml}</div></div>
+            <div class="feed-card-pricing" id="price-box-${d.id}" style="margin-top: 4px;"><div style="display:flex; align-items:baseline; gap:6px;"><span class="price-tag">₹${d.consumerPrice || '0'}</span><span class="shipping-extra-tag">+ Shipping Extra</span></div></div>
             <div class="pincode-widget">
-              <label style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Check Delivery Rates & ETA</label>
+              <label style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Check Delivery Rates</label>
               <div class="pincode-row-inputs">
-                <input type="text" class="pincode-input" id="input-pin-${d.id}" placeholder="Enter 6-digit Pincode">
-                <button type="button" class="pincode-btn" onclick="studio.execClientPincodeCheck('${d.id}')">Verify</button>
+                <input type="text" class="pincode-input" id="input-pin-${d.id}" placeholder="Enter 6-digit Pincode"><button type="button" class="pincode-btn" onclick="studio.execClientPincodeCheck('${d.id}')">Verify</button>
               </div>
               <div id="feedback-pin-${d.id}" style="margin-top:4px; display:none;"></div>
             </div>
           `;
           anchor.appendChild(card);
-        });
+        }
       },
 
       async execClientPincodeCheck(listingId) {
         const pinVal = document.getElementById(`input-pin-${listingId}`).value.trim();
-        const feedbackNode = document.getElementById(`feedback-pin-${listingId}`);
-        const priceBoxNode = document.getElementById(`price-box-${listingId}`);
+        const feedbackNode = document.getElementById(`feedback-pin-${listingId}`); const priceBoxNode = document.getElementById(`price-box-${listingId}`);
+        if (!pinVal || pinVal.length < 5) return alert("Invalid Pincode.");
 
-        if (!pinVal || pinVal.length < 5) return alert("Please specify a valid shipping delivery location area pincode.");
-
-        const d = await DB.operation('drafts', 'readonly', 'get', listingId);
-        if (!d) return;
-
-        FavoritesClient.logPincodeRequest(listingId, pinVal);
-        feedbackNode.style.display = "block";
+        const d = await DB.operation('drafts', 'readonly', 'get', listingId); if (!d) return;
+        FavoritesClient.logPincodeRequest(listingId, pinVal); feedbackNode.style.display = "block";
         const ratesTable = d.pincode_rates || {};
         
         if (ratesTable[pinVal] !== undefined) {
-          const approvedFee = parseFloat(ratesTable[pinVal]) || 0;
-          const totalOut = (parseFloat(d.consumerPrice) || 0) + approvedFee;
-          feedbackNode.className = "pincode-feedback feedback-verified";
-          feedbackNode.innerText = `✓ Pincode Rate Verified: Shipping ₹${approvedFee}`;
-          priceBoxNode.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:2px;">
-              <span class="price-tag" style="color:var(--accent);">₹${totalOut} Total</span>
-              <span style="font-size:0.75rem; color:var(--text-muted);">(Base Price ₹${d.consumerPrice} + Approved Shipping ₹${approvedFee})</span>
-            </div>
-          `;
+          const approvedFee = parseFloat(ratesTable[pinVal]) || 0; const totalOut = (parseFloat(d.consumerPrice) || 0) + approvedFee;
+          feedbackNode.className = "pincode-feedback feedback-verified"; feedbackNode.innerText = `✓ Verified: Shipping ₹${approvedFee}`;
+          priceBoxNode.innerHTML = `<div style="display:flex; flex-direction:column; gap:2px;"><span class="price-tag" style="color:var(--accent);">₹${totalOut} Total</span></div>`;
         } else {
-          feedbackNode.className = "pincode-feedback feedback-pending";
-          feedbackNode.innerText = "⏳ Shipping rate verification requested. Check back in 48 hours.";
-          priceBoxNode.innerHTML = `
-            <div style="display:flex; align-items:baseline; gap:6px;">
-               <span class="price-tag">₹${d.consumerPrice || '0'}</span>
-               <span class="shipping-extra-tag">+ Shipping Extra</span>
-            </div>
-          `;
+          feedbackNode.className = "pincode-feedback feedback-pending"; feedbackNode.innerText = "⏳ Verification requested. Check in 48 hours.";
         }
       },
 
-      handleCustomerLikeTap(id, element) {
-        FavoritesClient.toggleLocalFavorite(id);
-        element.classList.toggle('is-active-favorite');
-        this.refreshFavoritesIndicatorState();
-      },
-
+      handleCustomerLikeTap(id, element) { FavoritesClient.toggleLocalFavorite(id); element.classList.toggle('is-active-favorite'); this.refreshFavoritesIndicatorState(); },
       refreshFavoritesIndicatorState() {
-        const cta = document.getElementById('nav-whatsapp-sync-cta');
-        if (!cta) return;
-        if (this.activeViewName !== 'customer') {
-          cta.style.display = 'none';
-          return;
-        }
+        const cta = document.getElementById('nav-whatsapp-sync-cta'); if (!cta) return;
+        if (this.activeViewName !== 'customer') { cta.style.display = 'none'; return; }
         const count = FavoritesClient.fetchStoredFavorites().length;
-        if (count > 0) {
-          cta.innerText = `Inquire Likes (${count})`;
-          cta.style.display = 'block';
-        } else {
-          cta.style.display = 'none';
-        }
+        if (count > 0) { cta.innerText = `Inquire Likes (${count})`; cta.style.display = 'block'; } else { cta.style.display = 'none'; }
       },
 
       async generateWhatsAppIntent() {
-        const likes = FavoritesClient.fetchStoredFavorites();
-        if (likes.length === 0) return;
-        let txt = "Hi! I am browsing your catalogue view and want to inquire about these design patterns:\n\n";
-        for (const id of likes) {
-          const d = await DB.operation('drafts', 'readonly', 'get', id);
-          if (d) txt += `📌 *${d.title}*\n   Retail Price: ₹${d.consumerPrice} + Shipping Extra\n\n`;
-        }
-        txt += "Here is my delivery pincode to check verified rates: [Enter Pincode]";
+        const likes = FavoritesClient.fetchStoredFavorites(); if (likes.length === 0) return;
+        let txt = "Hi! Inquiring about these patterns:\n\n";
+        for (const id of likes) { const d = await DB.operation('drafts', 'readonly', 'get', id); if (d) txt += `📌 *${d.title}* - ₹${d.consumerPrice}\n`; }
         window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
       },
 
       async fastSkipItem(id) {
-        const d = await DB.operation('drafts', 'readonly', 'get', id);
-        if (!d) return;
-        d.status = 'Rejected'; d.decision = 'Rejected';
-        d.updatedAt = new Date().toISOString();
+        const d = await DB.operation('drafts', 'readonly', 'get', id); if (!d) return;
+        d.status = 'Rejected'; d.decision = 'Rejected'; d.updatedAt = new Date().toISOString();
+        
+        // Sprint 9.2 Garbage Collector: Delete split media block instantly from phone memory storage
         await DB.operation('drafts', 'readwrite', 'put', d);
+        await DB.operation('media_blocks', 'readwrite', 'delete', id);
+        
         this.renderFeedTimeline();
       },
 
       async showCuratorDrawer(id) {
-        const d = await DB.operation('drafts', 'readonly', 'get', id);
-        if (!d) return;
-        this.activeDraftRecord = d;
-        this.temporaryPincodeCache = { ...(d.pincode_rates || {}) };
-        this.temporaryImagesCache = [...(d.mediaIds || [])];
+        const d = await DB.operation('drafts', 'readonly', 'get', id); if (!d) return;
+        this.activeDraftRecord = d; this.temporaryPincodeCache = { ...(d.pincode_rates || {}) };
+        
+        // Sprint 9.2: Grab decoupled array block references
+        this.temporaryImagesCache = [];
+        if (d.has_images) {
+          const block = await DB.operation('media_blocks', 'readonly', 'get', id);
+          if (block && block.images) this.temporaryImagesCache = [...block.images];
+        }
 
         document.getElementById('curate-draft-id').value = d.id;
         document.getElementById('curate-title').value = d.title || '';
         document.getElementById('curate-base-price').value = d.basePrice || '';
         document.getElementById('curate-consumer-price').value = d.consumerPrice || '';
-        
         document.getElementById('curate-description').value = d.description || '';
         document.getElementById('curate-category').value = d.category || '';
         document.getElementById('curate-collection').value = d.collection || '';
@@ -1134,98 +1039,60 @@
         document.getElementById('curate-decision').value = d.decision;
         document.getElementById('curate-raw-text').value = d.rawText || '';
 
-        document.getElementById('matrix-pincode-input').value = '';
-        document.getElementById('matrix-rate-input').value = '';
-
-        this.renderDrawerPincodeMatrixUI();
-        this.renderDrawerImagesPreviewUI();
+        this.renderDrawerPincodeMatrixUI(); this.renderDrawerImagesPreviewUI();
 
         const tbody = document.getElementById('drawer-attributes-tbody');
-        if (tbody) {
-          tbody.innerHTML = '';
-          if (d.customAttributes) {
-            for (const [key, val] of Object.entries(d.customAttributes)) {
-              this.injectMatrixRowHTML(key, val);
-            }
-          }
-        }
-
-        const drawer = document.getElementById('curation-drawer');
-        if (drawer) drawer.classList.add('overlay-open');
+        if (tbody) { tbody.innerHTML = ''; if (d.customAttributes) { for (const [key, val] of Object.entries(d.customAttributes)) { this.injectMatrixRowHTML(key, val); } } }
+        const drawer = document.getElementById('curation-drawer'); if (drawer) drawer.classList.add('overlay-open');
       },
 
       renderDrawerPincodeMatrixUI() {
-        const tbody = document.getElementById('drawer-pincode-matrix-tbody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
+        const tbody = document.getElementById('drawer-pincode-matrix-tbody'); if (!tbody) return; tbody.innerHTML = '';
         for (const [pin, rate] of Object.entries(this.temporaryPincodeCache)) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td style="font-weight:bold; color:var(--warning);">${pin}</td>
-            <td style="color:var(--accent);">₹${rate}</td>
-            <td><button type="button" class="remove-matrix-row-btn" onclick="studio.deletePincodeOverrideRow('${pin}')">×</button></td>
-          `;
+          const tr = document.createElement('tr'); tr.innerHTML = `<td style="font-weight:bold; color:var(--warning);">${pin}</td><td style="color:var(--accent);">₹${rate}</td><td><button type="button" class="remove-matrix-row-btn" onclick="studio.deletePincodeOverrideRow('${pin}')">×</button></td>`;
           tbody.appendChild(tr);
         }
       },
 
       addPincodeOverrideRow() {
-        const pinInput = document.getElementById('matrix-pincode-input');
-        const rateInput = document.getElementById('matrix-rate-input');
-        const pin = pinInput.value.trim();
-        const rate = parseFloat(rateInput.value) || 0;
-        if (!pin || rate <= 0) return alert("Specify valid verification matrix arguments.");
-        this.temporaryPincodeCache[pin] = rate;
-        pinInput.value = ''; rateInput.value = '';
-        this.renderDrawerPincodeMatrixUI();
+        const pinInput = document.getElementById('matrix-pincode-input'); const rateInput = document.getElementById('matrix-rate-input');
+        const pin = pinInput.value.trim(); const rate = parseFloat(rateInput.value) || 0;
+        if (!pin || rate <= 0) return alert("Invalid inputs.");
+        this.temporaryPincodeCache[pin] = rate; pinInput.value = ''; rateInput.value = ''; this.renderDrawerPincodeMatrixUI();
       },
 
-      deletePincodeOverrideRow(pin) {
-        delete this.temporaryPincodeCache[pin];
-        this.renderDrawerPincodeMatrixUI();
-      },
+      deletePincodeOverrideRow(pin) { delete this.temporaryPincodeCache[pin]; this.renderDrawerPincodeMatrixUI(); },
 
       injectMatrixRowHTML(key = '', val = '') {
-        const tbody = document.getElementById('drawer-attributes-tbody');
-        if (!tbody) return;
-        const tr = document.createElement('tr');
-        tr.className = 'matrix-row';
-        tr.innerHTML = `
-          <td><input type="text" class="native-input style-attr-key" style="padding:10px;" value="${key}" placeholder="Label"></td>
-          <td><input type="text" class="native-input style-attr-val" style="padding:10px;" value="${val}" placeholder="Value"></td>
-          <td><button type="button" class="remove-matrix-row-btn" onclick="this.closest('tr').remove()">×</button></td>
-        `;
+        const tbody = document.getElementById('drawer-attributes-tbody'); if (!tbody) return; const tr = document.createElement('tr'); tr.className = 'matrix-row';
+        tr.innerHTML = `<td><input type="text" class="native-input style-attr-key" style="padding:10px;" value="${key}"></td><td><input type="text" class="native-input style-attr-val" style="padding:10px;" value="${val}"></td><td><button type="button" class="remove-matrix-row-btn" onclick="this.closest('tr').remove()">×</button></td>`;
         tbody.appendChild(tr);
       },
 
       appendBlankAttributeRow() { this.injectMatrixRowHTML('', ''); },
-
-      syncMarkupMath() {
-        const costInput = document.getElementById('curate-base-price');
-        const consumerInput = document.getElementById('curate-consumer-price');
-        if (!costInput || !consumerInput) return;
-        const cost = parseFloat(costInput.value) || 0;
-        consumerInput.value = Math.round(cost * 1.25);
-      },
+      syncMarkupMath() { const cost = parseFloat(document.getElementById('curate-base-price').value) || 0; document.getElementById('curate-consumer-price').value = Math.round(cost * 1.25); },
 
       async drawerSaveAndTrain() {
         if (!this.activeDraftRecord) return;
-
         let customAttributes = {};
-        const rows = document.querySelectorAll('.matrix-row');
-        rows.forEach(tr => {
-          const keyNode = tr.querySelector('.style-attr-key');
-          const valNode = tr.querySelector('.style-attr-val');
-          if (keyNode && valNode) {
-            const k = keyNode.value.trim().toLowerCase();
-            const v = valNode.value.trim();
-            if (k) customAttributes[k] = v;
-          }
+        document.querySelectorAll('.matrix-row').forEach(tr => {
+          const k = tr.querySelector('.style-attr-key')?.value.trim().toLowerCase();
+          const v = tr.querySelector('.style-attr-val')?.value.trim();
+          if (k && v) customAttributes[k] = v;
         });
 
         const newBasePrice = parseFloat(document.getElementById('curate-base-price').value) || 0;
-        if (newBasePrice !== this.activeDraftRecord.basePrice) {
-          await LearningParser.learnCorrection(this.activeDraftRecord.supplierId, this.activeDraftRecord.rawText, 'price', newBasePrice);
+        if (newBasePrice !== this.activeDraftRecord.basePrice) { await LearningParser.learnCorrection(this.activeDraftRecord.supplierId, this.activeDraftRecord.rawText, 'price', newBasePrice); }
+
+        // Sprint 9.2 Object Separation Workflow Execution
+        const targetId = this.activeDraftRecord.id;
+        const imageElementsExist = this.temporaryImagesCache.length > 0;
+
+        if (imageElementsExist) {
+          // Commit split imagery data payload safely to standalone room
+          await DB.operation('media_blocks', 'readwrite', 'put', { draftId: targetId, images: this.temporaryImagesCache });
+        } else {
+          await DB.operation('media_blocks', 'readwrite', 'delete', targetId);
         }
 
         const updated = {
@@ -1234,7 +1101,7 @@
           basePrice: newBasePrice,
           consumerPrice: parseFloat(document.getElementById('curate-consumer-price').value) || 0,
           pincode_rates: this.temporaryPincodeCache,
-          mediaIds: this.temporaryImagesCache, 
+          has_images: imageElementsExist, // Lightweight flag indicator bit
           description: document.getElementById('curate-description').value,
           category: document.getElementById('curate-category').value,
           collection: document.getElementById('curate-collection').value,
@@ -1250,19 +1117,13 @@
 
       async drawerRejectSkip() {
         if (!this.activeDraftRecord) return;
-        this.activeDraftRecord.status = 'Rejected'; this.activeDraftRecord.decision = 'Rejected';
-        this.activeDraftRecord.updatedAt = new Date().toISOString();
+        this.activeDraftRecord.status = 'Rejected'; this.activeDraftRecord.decision = 'Rejected'; this.activeDraftRecord.updatedAt = new Date().toISOString();
         await DB.operation('drafts', 'readwrite', 'put', this.activeDraftRecord);
+        await DB.operation('media_blocks', 'readwrite', 'delete', this.activeDraftRecord.id); // Garbage clean
         this.hideCuratorDrawer();
       },
 
-      hideCuratorDrawer() {
-        this.activeDraftRecord = null;
-        this.temporaryImagesCache = [];
-        const drawer = document.getElementById('curation-drawer');
-        if (drawer) drawer.classList.remove('overlay-open');
-        this.renderFeedTimeline();
-      }
+      hideCuratorDrawer() { this.activeDraftRecord = null; this.temporaryImagesCache = []; const drawer = document.getElementById('curation-drawer'); if (drawer) drawer.classList.remove('overlay-open'); this.renderFeedTimeline(); }
     };
 
     window.addEventListener('DOMContentLoaded', () => studio.start());
