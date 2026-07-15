@@ -3,27 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Commerce OS - Sprint 9.2 Architecture Core</title>
+  <title>BESOINS - Catalog Engine</title>
   <style>
     :root {
-      --bg-primary: #000000;      /* Pure OLED Black */
-      --bg-surface: #121212;      /* Base Dark Mode Surface */
-      --bg-card: #1c1c1e;         /* iOS Style dark container layer */
-      --bg-active: #2c2c2e;       /* Press feedback states */
-      --text-primary: #ffffff;
-      --text-muted: #8e8e93;      /* Subdued grey meta labels */
-      --accent: #30d158;          /* WhatsApp green brand mark */
-      --danger: #ff453a;          /* Crimson red for drops/skips */
-      --border: #262629;          /* Structural clean dividers */
-      --warning: #ffb74d;         /* Dynamic training accent alert */
-      --info: #0a84ff;            /* Blue for active inquiries */
+      /* CEMENT WALL TEXTURED COLOR VIBE */
+      --bg-primary: #d6d7d9;      /* Light Raw Concrete Grey */
+      --bg-surface: #e5e6e8;      /* Smooth Cement Wall Tint */
+      --bg-card: #f0f1f2;         /* Pale Bleached Stone Container Layer */
+      --bg-active: #c8c9cc;       /* Deep Pressed Cement Feedback State */
+      --text-primary: #1a1a1a;    /* Matte Charcoal Black Body Type */
+      --text-muted: #6b6c6e;      /* Subdued Slate Grey Meta Labels */
+      --accent: #222222;          /* Industrial Dark Charcoal Accent Brand Mark */
+      --danger: #b3261e;          /* Muted Terracotta Crimson for Skips */
+      --border: #b8b9bc;          /* Weathered Cement Structural Dividers */
+      --warning: #cf7011;         /* Weathered Rust Tint Alert Indicators */
+      --info: #2b6cb0;            /* Slate Blue for Active Pincode Processing */
     }
 
     * { 
       box-sizing: border-box; 
       margin: 0; 
       padding: 0; 
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Didot", "Georgia", serif;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -52,29 +53,45 @@
     }
 
     .app-header {
-      height: 65px;
+      height: 70px;
       padding: 0 20px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(18, 18, 18, 0.85);
+      background: rgba(229, 230, 232, 0.85);
       backdrop-filter: blur(20px);
       z-index: 10;
       flex-shrink: 0;
     }
 
-    .app-header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+    .brand-title-container {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-title-main {
+      font-family: "Times New Roman", "Didot", "Georgia", serif;
+      font-size: 1.4rem;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      line-height: 1.1;
+    }
+    .brand-title-sub {
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-weight: 600;
     }
 
     .view-deck {
       flex: 1;
       overflow-y: auto;
       padding: 16px;
-      padding-bottom: 100px;
+      padding-bottom: 110px;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -85,117 +102,122 @@
     
     .feed-card {
       background: var(--bg-card);
-      border-radius: 16px;
-      padding: 16px;
+      border-radius: 12px;
+      padding: 18px;
       border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
     }
 
-    /* HORIZONTAL SCROLL DECK - FIXED TO NOT CROP PATTERNS */
     .card-media-gallery {
       width: 100%;
       display: none; 
-      gap: 8px;
+      gap: 10px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
-      padding-bottom: 4px;
+      padding-bottom: 2px;
     }
     .card-media-gallery::-webkit-scrollbar { display: none; }
     
     .card-media-gallery img {
-      width: 90%;
+      width: 92%;
       flex-shrink: 0;
-      height: 280px;
-      object-fit: contain; /* Enforces full image visibility without cropping */
-      border-radius: 10px;
+      height: 300px;
+      object-fit: contain;
+      border-radius: 6px;
       scroll-snap-align: start;
-      background: #000000; /* Pure black backdrop matrix padding */
+      background: #e1e2e4; 
       border: 1px solid var(--border);
       cursor: zoom-in;
     }
 
     .feed-card-header { display: flex; justify-content: space-between; align-items: center; }
-    .supplier-pill { font-size: 0.75rem; font-weight: 600; background: var(--bg-active); padding: 4px 10px; border-radius: 20px; color: var(--text-muted); }
-    .feed-card-body h3 { font-size: 1.15rem; font-weight: 600; }
-    .feed-card-body p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.45; margin-top: 4px; white-space: pre-wrap; }
-    .dynamic-attributes-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .supplier-pill { font-size: 0.7rem; font-weight: 700; background: var(--bg-active); padding: 5px 12px; border-radius: 6px; color: var(--accent); letter-spacing: 0.5px; text-transform: uppercase; }
+    .feed-card-body h3 { font-family: "Times New Roman", "Didot", "Georgia", serif; font-size: 1.3rem; font-weight: 500; letter-spacing: 0.5px; color: var(--accent); text-transform: lowercase; }
+    .feed-card-body h3::first-letter { text-transform: uppercase; }
+    .feed-card-body p { font-size: 0.9rem; color: #333333; line-height: 1.5; margin-top: 6px; white-space: pre-wrap; letter-spacing: 0.2px; }
+    
+    .dynamic-attributes-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
     
     .attribute-chip {
-      background: rgba(48, 209, 88, 0.1);
-      border: 1px solid rgba(48, 209, 88, 0.2);
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border);
       color: var(--accent);
       font-size: 0.75rem;
       padding: 4px 10px;
-      border-radius: 6px;
+      border-radius: 4px;
       font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .feed-card-pricing { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; }
-    .price-tag { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+    .price-tag { font-family: "Times New Roman", "Didot", serif; font-size: 1.4rem; font-weight: 700; color: var(--accent); }
     .price-base { font-size: 0.85rem; color: var(--text-muted); text-decoration: line-through; }
-    .shipping-extra-tag { font-size: 0.8rem; color: var(--warning); font-weight: 600; }
+    .shipping-extra-tag { font-size: 0.8rem; color: var(--warning); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
     
     .feed-quick-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; margin-top: 4px; }
     
     .action-btn {
-      padding: 14px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer;
-      text-transform: uppercase; display: flex; align-items: center; justify-content: center;
+      padding: 14px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer;
+      text-transform: uppercase; display: flex; align-items: center; justify-content: center; letter-spacing: 0.5px;
+      transition: background 0.15s ease;
     }
-    .btn-reject { background: rgba(255, 69, 58, 0.15); color: var(--danger); }
-    .btn-edit-curate { background: var(--bg-active); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-reject { background: #f2dede; color: var(--danger); border: 1px solid rgba(179,38,30,0.15); }
+    .btn-edit-curate { background: var(--bg-active); color: var(--accent); border: 1px solid var(--border); }
 
     .intake-meta-row { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; margin-bottom: 16px; }
-    .form-label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; font-weight: 700; }
+    .form-label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
     
     select, textarea, input.native-input {
       width: 100%; background: var(--bg-card); border: 1px solid var(--border);
-      color: var(--text-primary); padding: 14px; font-size: 1rem; border-radius: 10px; outline: none;
+      color: var(--text-primary); padding: 14px; font-size: 0.95rem; border-radius: 8px; outline: none;
     }
+    select:focus, textarea:focus, input.native-input:focus { border-color: var(--accent); }
 
     .export-panel-container {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 16px;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
     }
     .export-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.85rem; }
-    .export-table th { text-align: left; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-    .export-table td { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .export-table th { text-align: left; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; padding-bottom: 6px; border-bottom: 1px solid var(--border); letter-spacing: 0.5px; }
+    .export-table td { padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
 
     .pincode-widget {
-      margin-top: 10px;
-      padding-top: 10px;
+      margin-top: 6px;
+      padding-top: 12px;
       border-top: 1px dashed var(--border);
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
     .pincode-row-inputs { display: flex; gap: 8px; width: 100%; }
-    .pincode-input { flex: 1; min-width: 0; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); color: #fff; border-radius: 8px; font-size: 0.85rem; }
-    .pincode-btn { padding: 0 16px; background: var(--info); color: #fff; font-weight: bold; font-size: 0.8rem; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; flex-shrink: 0; }
-    .pincode-feedback { font-size: 0.8rem; font-weight: 600; padding: 6px 10px; border-radius: 6px; display: block; width: 100%; text-align: left; }
-    .feedback-pending { background: rgba(255, 183, 77, 0.1); color: var(--warning); border: 1px solid rgba(255,183,77,0.2); }
-    .feedback-verified { background: rgba(48, 209, 88, 0.1); color: var(--accent); border: 1px solid rgba(48,209,88,0.2); }
+    .pincode-input { flex: 1; min-width: 0; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; font-size: 0.9rem; outline: none; }
+    .pincode-input:focus { border-color: var(--accent); }
+    .pincode-btn { padding: 0 18px; background: var(--accent); color: var(--bg-surface); font-weight: 700; font-size: 0.8rem; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; flex-shrink: 0; letter-spacing: 0.5px; }
+    .pincode-feedback { font-size: 0.8rem; font-weight: 600; padding: 8px 12px; border-radius: 6px; display: block; width: 100%; text-align: left; margin-top: 4px; }
+    .feedback-pending { background: rgba(207, 112, 17, 0.08); color: var(--warning); border: 1px solid rgba(207, 112, 17, 0.15); }
+    .feedback-verified { background: rgba(0, 0, 0, 0.04); color: var(--accent); border: 1px solid var(--border); }
 
     .heart-like-toggle {
       position: absolute;
-      top: 16px; right: 18px;
-      font-size: 1.5rem; cursor: pointer;
-      color: #3a3a3c;
-      transition: transform 0.12s ease;
+      top: 18px; right: 20px;
+      font-size: 1.4rem; cursor: pointer;
+      color: #b8b9bc;
+      transition: transform 0.12s ease, color 0.12s ease;
       z-index: 5;
     }
-    .heart-like-toggle.is-active-favorite { color: #ff2d55; transform: scale(1.15); }
-    .brand-pill { font-size: 0.75rem; font-weight: 600; background: var(--bg-active); padding: 4px 12px; border-radius: 20px; color: var(--text-muted); align-self: flex-start; }
+    .heart-like-toggle.is-active-favorite { color: #c92a2a; transform: scale(1.15); }
+    .brand-pill { font-size: 0.65rem; font-weight: 700; background: var(--accent); padding: 5px 12px; border-radius: 4px; color: var(--bg-surface); align-self: flex-start; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* OVERLAY SYSTEM CONTROLS */
     .fullscreen-overlay {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -206,40 +228,40 @@
       transition: transform 0.22s cubic-bezier(0.1, 0.7, 0.1, 1);
     }
     .fullscreen-overlay.overlay-open { transform: translateY(0) !important; }
-    .overlay-header { height: 65px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .overlay-header { height: 70px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
     .overlay-body { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
     .editor-actions-bar { padding: 16px; border-top: 1px solid var(--border); background: var(--bg-surface); display: grid; grid-template-columns: 1fr 2fr; gap: 12px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); flex-shrink: 0; }
 
     .drawer-media-uploader {
-      background: var(--bg-primary); border: 2px dashed var(--border); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 16px; cursor: pointer; position: relative;
+      background: var(--bg-card); border: 1px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 16px; cursor: pointer; position: relative;
     }
     .drawer-media-preview-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-    .drawer-preview-thumb { width: 100%; aspect-ratio: 1; object-fit: contain; background:#000; border-radius: 8px; border: 1px solid var(--border); }
+    .drawer-preview-thumb { width: 100%; aspect-ratio: 1; object-fit: contain; background:#e1e2e4; border-radius: 6px; border: 1px solid var(--border); }
 
     .matrix-editor-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-    .matrix-editor-table th { text-align: left; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; padding-bottom: 6px; }
+    .matrix-editor-table th { text-align: left; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; padding-bottom: 6px; letter-spacing: 0.5px; }
     .matrix-editor-table td { padding: 4px 0; }
     .remove-matrix-row-btn { background: none; border: none; color: var(--danger); font-size: 1.4rem; cursor: pointer; padding: 0 8px; }
-    .add-matrix-row-trigger { background: var(--bg-primary); border: 1px dashed var(--border); padding: 12px; border-radius: 8px; text-align: center; font-size: 0.8rem; color: var(--accent); cursor: pointer; font-weight: bold; margin-bottom: 16px; }
+    .add-matrix-row-trigger { background: var(--bg-surface); border: 1px dashed var(--border); padding: 12px; border-radius: 6px; text-align: center; font-size: 0.8rem; color: var(--accent); cursor: pointer; font-weight: bold; margin-bottom: 16px; }
 
-    /* NATIVE-STYLE GALLERY PINCH TO ZOOM THEATER THEME */
     #gallery-theater-overlay {
       position: absolute;
       top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.98);
+      background: rgba(18,18,18,0.98);
       z-index: 200;
       display: none;
       justify-content: center;
       align-items: center;
-      touch-action: none; /* Block browser base zoom handlers */
+      touch-action: none;
     }
     .theater-close-btn {
       position: absolute;
       top: 20px; right: 20px;
-      background: rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.4);
       color: white; border: none; border-radius: 50%;
       width: 40px; height: 40px; font-size: 1.2rem;
       font-weight: bold; cursor: pointer; z-index: 210;
+      display: flex; justify-content: center; align-items: center;
     }
     #theater-zoom-viewport {
       width: 100%; height: 100%;
@@ -256,44 +278,43 @@
     .bottom-tabs {
       position: absolute;
       bottom: 0; left: 0; right: 0; height: 75px;
-      background: rgba(18, 18, 18, 0.94); border-top: 1px solid var(--border);
+      background: rgba(229, 230, 232, 0.94); border-top: 1px solid var(--border);
       display: grid; grid-template-columns: 1fr 1fr 1fr; z-index: 20;
       padding-bottom: env(safe-area-inset-bottom); backdrop-filter: blur(20px); flex-shrink: 0;
     }
-    .tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; font-weight: 600; gap: 4px; }
+    .tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; font-size: 0.65rem; font-weight: 700; gap: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
     .tab-item.tab-active { color: var(--accent); }
-    .tab-icon { font-size: 1.3rem; }
+    .tab-icon { font-size: 1.2rem; filter: grayscale(100%) brightness(30%); }
+    .tab-item.tab-active .tab-icon { filter: none; }
     
-    .chip { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
-    .chip.chip-active { background: var(--text-primary); color: #000; border-color: var(--text-primary); }
+    .chip { background: var(--bg-card); border: 1px solid var(--border); color: var(--accent); padding: 8px 16px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+    .chip.chip-active { background: var(--accent); color: var(--bg-surface); border-color: var(--accent); }
     .filter-scroller { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; width: 100%; }
     .filter-scroller::-webkit-scrollbar { display: none; }
-    .empty-state { color: var(--text-muted); text-align: center; padding: 40px 20px; font-size: 0.9rem; }
-    
-    .status-badge-verification { font-size: 0.7rem; background: rgba(255, 183, 77, 0.15); color: var(--warning); padding: 4px 8px; border-radius: 6px; font-weight: bold; border: 1px solid rgba(255, 183, 77, 0.3); }
-    .supplier-list-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-bottom: 8px; }
+    .empty-state { color: var(--text-muted); text-align: center; padding: 40px 20px; font-size: 0.9rem; font-family: serif; font-style: italic; }
   </style>
 </head>
 <body>
 
   <div class="phone-shell">
     
-    <!-- HEADER PANEL -->
     <header class="app-header">
-      <h1 id="view-title-label">Active Feed</h1>
-      <span id="feed-badge-counter" style="font-size: 0.75rem; background: var(--accent); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 800;">0</span>
-      <button type="button" class="chip" id="nav-whatsapp-sync-cta" style="background:var(--accent); color:#000; border:none; display:none; font-size:0.75rem; padding:6px 12px;" onclick="studio.generateWhatsAppIntent()">Inquire Likes (0)</button>
+      <div class="brand-title-container">
+        <span class="brand-title-main">Besoins</span>
+        <span class="brand-title-sub">Fashion & More</span>
+      </div>
+      <span id="feed-badge-counter" style="font-size: 0.75rem; background: var(--accent); color: var(--bg-surface); padding: 3px 8px; border-radius: 4px; font-weight: 700;">0</span>
+      <button type="button" class="chip" id="nav-whatsapp-sync-cta" style="background:var(--accent); color:var(--bg-surface); border:none; display:none; font-size:0.7rem; padding:6px 12px;" onclick="studio.generateWhatsAppIntent()">Inquire Likes (0)</button>
     </header>
 
-    <!-- MAIN SCROLLABLE CONTENT BLOCK -->
     <main class="view-deck">
       
-      <!-- VIEWPORT 1: RESELLER STUDIO DECK -->
+      <!-- VIEWPORT 1: TIMELINE FEED -->
       <section id="pane-feed" class="app-view active-view">
         <div class="export-panel-container" id="reseller-export-panel">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h4 style="font-size:0.8rem; text-transform:uppercase; color:var(--warning);">📦 Pincode Verification Queue</h4>
-            <button class="chip" style="font-size:0.7rem; padding:4px 8px; background:var(--info); color:#fff; border:none;" onclick="studio.copyBulkPincodeIntent()">WhatsApp Bulk Copy</button>
+            <h4 style="font-size:0.75rem; text-transform:uppercase; color:var(--accent); letter-spacing: 0.5px; font-weight: 700;">📦 Pincode Verification Queue</h4>
+            <button class="chip" style="font-size:0.65rem; padding:4px 8px; background:var(--accent); color:var(--bg-surface); border:none;" onclick="studio.copyBulkPincodeIntent()">WhatsApp Bulk Copy</button>
           </div>
           <table class="export-table">
             <thead>
@@ -312,12 +333,12 @@
           <div class="chip" data-status-filter="Imported">New Imports</div>
           <div class="chip" data-status-filter="Reviewing">Reviewing</div>
           <div class="chip" data-status-filter="Ready">Ready to Share</div>
-          <button type="button" class="chip" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); font-size: 0.8rem; margin-left: auto; flex-shrink:0;" onclick="studio.showSupplierManager()">⚙️ Manage</button>
+          <button type="button" class="chip" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--accent); font-size: 0.75rem; margin-left: auto; flex-shrink:0;" onclick="studio.showSupplierManager()">⚙️ Manage</button>
         </div>
         <div id="feed-cards-anchor" class="feed-container" style="margin-top: 16px;"></div>
       </section>
 
-      <!-- VIEWPORT 2: RAW TEXT INGESTION -->
+      <!-- VIEWPORT 2: INGESTION STREAMS -->
       <section id="pane-intake" class="app-view">
         <form id="intake-form" onsubmit="studio.handleIntakeSubmit(event)">
           <div class="intake-meta-row">
@@ -325,11 +346,11 @@
               <label class="form-label">Supplier Source</label>
               <div style="display: flex; gap: 8px; align-items: center;">
                 <select id="intake-supplier-select" style="flex: 1; height: 48px;"></select>
-                <button type="button" class="chip" style="background: var(--accent); color: #000; font-weight: bold; border: none; height: 48px; width: 48px; border-radius: 10px; display: flex; justify-content: center; align-items: center; padding:0;" onclick="studio.promptQuickAddSupplier()">➕</button>
+                <button type="button" class="chip" style="background: var(--accent); color: var(--bg-surface); font-weight: bold; border: none; height: 48px; width: 48px; border-radius: 8px; display: flex; justify-content: center; align-items: center; padding:0;" onclick="studio.promptQuickAddSupplier()">➕</button>
               </div>
             </div>
             <div>
-              <label class="form-label">Calculated Margin Multiplier</label>
+              <label class="form-label">Margin Multiplier</label>
               <select id="intake-margin-preset" style="height: 48px;">
                 <option value="1.25">Standard Stock (+25%)</option>
                 <option value="1.20">High Ticket Value (+20%)</option>
@@ -340,14 +361,14 @@
 
           <div class="form-group">
             <label class="form-label">Raw Sourced Message Content Block</label>
-            <textarea id="intake-raw-text" rows="12" placeholder="Paste unorganized text stream directly..."></textarea>
+            <textarea id="intake-raw-text" rows="12" placeholder="Paste unorganized chat text straight from supplier stream..."></textarea>
           </div>
 
-          <button type="submit" class="btn action-btn" style="background: var(--text-primary); color: var(--bg-primary); width:100%; margin-top: 12px;">Process Stream Ingestion</button>
+          <button type="submit" class="btn action-btn" style="background: var(--accent); color: var(--bg-surface); width:100%; margin-top: 12px;">Process Stream Ingestion</button>
         </form>
       </section>
 
-      <!-- VIEWPORT 3: WHITE-LABELED CUSTOMER STOREFRONT -->
+      <!-- VIEWPORT 3: WHITE-LABELED CATALOG storefront -->
       <section id="pane-customer" class="app-view">
         <div id="customer-cards-anchor" class="feed-container"></div>
       </section>
@@ -357,43 +378,42 @@
     <!-- FULL SCREEN CURATOR DRAW SHEET MODULE -->
     <section class="fullscreen-overlay" id="curation-drawer">
       <div class="overlay-header">
-        <h2 style="font-size: 1.1rem; font-weight: 700;">Curate Design</h2>
+        <h2 style="font-family: serif; font-size: 1.2rem; letter-spacing:0.5px; font-weight: 600; color: var(--accent);">Curate Collection Pattern</h2>
         <button type="button" class="chip" onclick="studio.hideCuratorDrawer()">Minimize</button>
       </div>
       <div class="overlay-body">
         <form id="curate-form" onsubmit="event.preventDefault();">
           <input type="hidden" id="curate-draft-id">
           
-          <!-- ATTACH DESIGN MULTI IMAGES BAR -->
           <div class="drawer-media-uploader" onclick="document.getElementById('drawer-hidden-file-input').click();">
-            <span style="font-size:0.8rem; font-weight:bold; color:var(--accent);">📸 Tap to Upload Pattern Images</span>
+            <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-primary);">📸 Select Variant Textures</span>
             <input type="file" id="drawer-hidden-file-input" accept="image/*" multiple style="display:none;" onchange="studio.handleDrawerImageUpload(event)">
             <div class="drawer-media-preview-container" id="drawer-media-preview-anchor"></div>
           </div>
 
           <div class="form-group" style="margin-bottom: 12px;">
-            <label class="form-label">Customer Display Heading</label>
+            <label class="form-label">Customer Display Title</label>
             <input type="text" id="curate-title" class="native-input" required>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;" class="form-group">
             <div>
-              <label class="form-label">Supplier Base Cost (₹)</label>
+              <label class="form-label">Supplier Cost (₹)</label>
               <input type="number" id="curate-base-price" class="native-input" oninput="studio.syncMarkupMath()">
             </div>
             <div>
-              <label class="form-label">Retail Selling Price (₹)</label>
+              <label class="form-label">Retail Price (₹)</label>
               <input type="number" id="curate-consumer-price" class="native-input">
             </div>
           </div>
 
-          <!-- APPROVED PINCODE MATRIX OVERRIDES -->
-          <div class="form-group" style="margin-bottom: 16px; border: 1px solid var(--border); padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.2);">
-            <label class="form-label" style="color: var(--accent);">Approved Supplier Rates Matrix</label>
+          <!-- APPROVED PINCODE REGIONAL OVERRIDES MATRIX -->
+          <div class="form-group" style="margin-bottom: 16px; border: 1px solid var(--border); padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.02);">
+            <label class="form-label" style="color: var(--accent); font-weight: 700;">Approved Regional Rates Matrix</label>
             <div style="display:flex; gap:8px; margin-bottom: 8px;">
-              <input type="text" id="matrix-pincode-input" class="native-input" placeholder="Enter Pincode" style="padding:8px;">
-              <input type="number" id="matrix-rate-input" class="native-input" placeholder="Rate (₹)" style="padding:8px;">
-              <button type="button" class="chip" style="background:var(--accent); color:#000; border:none; font-weight:bold;" onclick="studio.addPincodeOverrideRow()">Add</button>
+              <input type="text" id="matrix-pincode-input" class="native-input" placeholder="Pincode" style="padding:8px; height:38px;">
+              <input type="number" id="matrix-rate-input" class="native-input" placeholder="Fee (₹)" style="padding:8px; height:38px;">
+              <button type="button" class="chip" style="background:var(--accent); color:var(--bg-surface); border:none;" onclick="studio.addPincodeOverrideRow()">Add</button>
             </div>
             <table class="matrix-editor-table" style="margin-bottom:0;">
               <thead>
@@ -408,12 +428,12 @@
           </div>
 
           <div class="form-group" style="margin-bottom: 12px;">
-            <label class="form-label">Cleaned Buyer Description (White-Labeled)</label>
-            <textarea id="curate-description" rows="4" style="width:100%; background:var(--bg-card); border:1px solid var(--border); color:var(--text-primary); padding:10px; border-radius:10px; font-size:0.95rem; outline:none;"></textarea>
+            <label class="form-label">Cleaned Variant Profile Specs (White-Labeled)</label>
+            <textarea id="curate-description" rows="4" style="width:100%; background:var(--bg-card); border:1px solid var(--border); color:var(--text-primary); padding:12px; border-radius:8px; font-size:0.9rem; line-height:1.4; outline:none;"></textarea>
           </div>
 
           <div class="form-group" style="margin-bottom: 12px;">
-            <label class="form-label">Dynamic Spec Fields Matrix (e.g. Fabric, Sizes, Weight)</label>
+            <label class="form-label">Technical Variations Table Specs</label>
             <table class="matrix-editor-table">
               <thead>
                 <tr>
@@ -441,7 +461,7 @@
           <div class="intake-meta-row">
             <div>
               <label class="form-label">Workflow Stage</label>
-              <select id="curate-status">
+              <select id="curate-status" style="height:44px; padding:0 10px;">
                 <option value="Imported">Imported</option>
                 <option value="Reviewing">Reviewing</option>
                 <option value="Ready">Ready to Share</option>
@@ -449,7 +469,7 @@
             </div>
             <div>
               <label class="form-label">Triage Decision</label>
-              <select id="curate-decision">
+              <select id="curate-decision" style="height:44px; padding:0 10px;">
                 <option value="Pending">Pending</option>
                 <option value="Accepted">Accepted</option>
                 <option value="Rejected">Rejected</option>
@@ -458,29 +478,29 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Raw Sourced Supplier Text</label>
-            <textarea id="curate-raw-text" rows="5" readonly style="font-family: monospace; font-size: 0.8rem; background: var(--bg-primary); opacity: 0.65;"></textarea>
+            <label class="form-label">Raw Sourced Sourcing Text</label>
+            <textarea id="curate-raw-text" rows="5" readonly style="font-family: monospace; font-size: 0.8rem; background: var(--bg-surface); opacity: 0.7;"></textarea>
           </div>
         </form>
       </div>
       <div class="editor-actions-bar">
         <button type="button" class="action-btn btn-reject" onclick="studio.drawerRejectSkip()">Skip</button>
-        <button type="button" class="action-btn" style="background: var(--accent); color: #000;" onclick="studio.drawerSaveAndTrain()">Save & Train Engine</button>
+        <button type="button" class="action-btn" style="background: var(--accent); color: var(--bg-surface);" onclick="studio.drawerSaveAndTrain()">Save & Train Engine</button>
       </div>
     </section>
 
-    <!-- REGISTER AND DIRECTORY OVERLAY FOR SUPPLIERS -->
+    <!-- SUPPLIER MANAGEMENT PANEL -->
     <section class="fullscreen-overlay" id="supplier-manager-drawer">
       <div class="overlay-header">
-        <h2 style="font-size: 1.1rem; font-weight: 700;">Manage Suppliers</h2>
+        <h2 style="font-family: serif; font-size: 1.2rem; color: var(--accent); font-weight: 600;">Manage Suppliers Directory</h2>
         <button type="button" class="chip" onclick="studio.hideSupplierManager()">Close</button>
       </div>
       <div class="overlay-body">
-        <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 14px; border-radius: 12px; margin-bottom: 16px;">
-          <label class="form-label">Register New Supplier Entity</label>
+        <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 16px;">
+          <label class="form-label">Register New Sourcing Factory</label>
           <div style="display: flex; gap: 8px; margin-top: 6px;">
-            <input type="text" id="manager-new-supplier-name" class="native-input" placeholder="Enter Company Name" style="padding: 10px; height:46px;">
-            <button type="button" class="chip" style="background: var(--accent); color: #000; font-weight: bold; border: none; padding: 0 16px; height:46px; flex-shrink:0;" onclick="studio.addSupplierFromManager()">Add</button>
+            <input type="text" id="manager-new-supplier-name" class="native-input" placeholder="Company Name" style="padding: 10px; height:46px;">
+            <button type="button" class="chip" style="background: var(--accent); color: var(--bg-surface); font-weight: bold; border: none; padding: 0 16px; height:46px; flex-shrink:0;" onclick="studio.addSupplierFromManager()">Add</button>
           </div>
         </div>
         <label class="form-label">Active Directory</label>
@@ -488,7 +508,7 @@
       </div>
     </section>
 
-    <!-- NATIVE MULTI TOUCH PINCH GALLERY INTERACTIVE HOOK (SPRINT 9.2) -->
+    <!-- THEATER SCREEN OVERLAY -->
     <div id="gallery-theater-overlay">
       <button class="theater-close-btn" onclick="theater.dismiss()">×</button>
       <div id="theater-zoom-viewport">
@@ -496,7 +516,7 @@
       </div>
     </div>
 
-    <!-- STICKY NAVIGATION BAR -->
+    <!-- BOTTOM FIXED NAV SYSTEM FOOTER TABS -->
     <nav class="bottom-tabs">
       <div class="tab-item tab-active" id="nav-feed" onclick="studio.navigate('feed')">
         <span class="tab-icon">📱</span>
@@ -515,22 +535,16 @@
   </div>
 
   <script>
-    /**
-     * STORAGE ENGINE OPTIMIZATION MATRIX (SPRINT 9.2 DESIGN DECOUPLING LAYER)
-     */
     const DB = {
       instance: null,
       init() {
         return new Promise((resolve, reject) => {
-          // Open V5 storage variant to ensure database structural clarity
           const req = indexedDB.open('CommerceOS_Storage_Optimized_V5', 1);
           req.onupgradeneeded = (e) => {
             const d = e.target.result;
             if (!d.objectStoreNames.contains('suppliers')) d.createObjectStore('suppliers', { keyPath: 'id' });
             if (!d.objectStoreNames.contains('rules')) d.createObjectStore('rules', { keyPath: 'supplierId' });
             if (!d.objectStoreNames.contains('drafts')) d.createObjectStore('drafts', { keyPath: 'id' });
-            
-            // Sprint 9.2: Dedicated image warehouse room
             if (!d.objectStoreNames.contains('media_blocks')) d.createObjectStore('media_blocks', { keyPath: 'draftId' });
           };
           req.onsuccess = (e) => { this.instance = e.target.result; resolve(); };
@@ -549,68 +563,32 @@
       }
     };
 
-    /**
-     * NATIVE-STYLE GALLERY MULTI TOUCH CONTROLLER MATRIX
-     */
     const theater = {
       scale: 1, lastScale: 1, startDistance: 0, active: false,
-      
       init() {
         const viewNode = document.getElementById('theater-zoom-viewport');
         if (!viewNode) return;
-
-        // Two-Finger Gesture Listeners
         viewNode.addEventListener('touchstart', (e) => {
           if (e.touches.length === 2) {
             this.active = true;
-            this.startDistance = this.getHypotenuseDistance(e.touches[0], e.touches[1]);
+            this.startDistance = Math.hypot(e.touches[1].clientX - e.touches[0].clientX, e.touches[1].clientY - e.touches[0].clientY);
             this.lastScale = this.scale;
           }
         }, { passive: true });
-
         viewNode.addEventListener('touchmove', (e) => {
           if (this.active && e.touches.length === 2) {
-            const currentDist = this.getHypotenuseDistance(e.touches[0], e.touches[1]);
+            const currentDist = Math.hypot(e.touches[1].clientX - e.touches[0].clientX, e.touches[1].clientY - e.touches[0].clientY);
             if (this.startDistance > 0) {
-              const deltaFactor = currentDist / this.startDistance;
-              this.scale = Math.min(Math.max(this.lastScale * deltaFactor, 0.8), 5); // Limit scaling threshold bounds
+              this.scale = Math.min(Math.max((currentDist / this.startDistance) * this.lastScale, 1), 4);
               this.applyTransform();
             }
           }
         }, { passive: true });
-
-        viewNode.addEventListener('touchend', (e) => {
-          if (e.touches.length < 2) {
-            this.active = false;
-            this.lastScale = this.scale;
-            if(this.scale < 1) { this.scale = 1; this.applyTransform(); } // Auto snap-back normalization
-          }
-        }, { passive: true });
+        viewNode.addEventListener('touchend', (e) => { if (e.touches.length < 2) { this.active = false; this.lastScale = this.scale; } }, { passive: true });
       },
-
-      getHypotenuseDistance(t1, t2) {
-        return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-      },
-
-      applyTransform() {
-        const img = document.getElementById('theater-zoom-image');
-        if (img) img.style.transform = `scale(${this.scale})`;
-      },
-
-      launch(imgSrc) {
-        const overlay = document.getElementById('gallery-theater-overlay');
-        const img = document.getElementById('theater-zoom-image');
-        if (!overlay || !img) return;
-        
-        this.scale = 1; this.lastScale = 1; this.applyTransform();
-        img.src = imgSrc;
-        overlay.style.display = 'flex';
-      },
-
-      dismiss() {
-        const overlay = document.getElementById('gallery-theater-overlay');
-        if (overlay) overlay.style.display = 'none';
-      }
+      applyTransform() { const img = document.getElementById('theater-zoom-image'); if (img) img.style.transform = `scale(${this.scale})`; },
+      launch(imgSrc) { this.scale = 1; this.applyTransform(); document.getElementById('theater-zoom-image').src = imgSrc; document.getElementById('gallery-theater-overlay').style.display = 'flex'; },
+      dismiss() { document.getElementById('gallery-theater-overlay').style.display = 'none'; }
     };
 
     const LearningParser = {
@@ -621,7 +599,7 @@
 
         if (!rule) {
           rule = {
-            supplierId: supplierId, priceAnchors: ['rate :', 'rate:', 'rate', 'price', 'prc'],
+            supplierId: supplierId, priceAnchors: ['rate :', 'rate:', 'rate', 'price', 'prc', 'cost'],
             attributeAnchors: { 'fabric': ['fabric', 'fabrics', 'top :'], 'sizes': ['size', 'size:', 'sizes'], 'weight': ['weight', 'weight :', 'weight:'] }
           };
         }
@@ -656,9 +634,10 @@
           }
         }
 
-        const customerDescription = lines.filter(line => {
+        const sliceLines = lines.slice(1); 
+        const customerDescription = sliceLines.filter(line => {
           const lower = line.toLowerCase();
-          return !(lower.includes('rate') || lower.includes('rs') || lower.includes('₹') || lower.includes('$') || lower.includes('+'));
+          return !(lower.includes('rate') || lower.includes('rs') || lower.includes('₹') || lower.includes('$') || lower.includes('+') || lower.includes('price') || lower.includes('/-') || lower.includes('ship'));
         }).join('\n');
 
         return { derivedPrice: detectedPrice, customerDescription, customAttributes };
@@ -686,7 +665,7 @@
     };
 
     const FavoritesClient = {
-      cacheKey: 'CommerceOS_Final_User_Likes_V2', pincodeKey: 'CommerceOS_Customer_Pincode_Queries',
+      cacheKey: 'CommerceOS_Final_User_Likes_V2', pincodeKey: 'CommerceOS_Customer_Pincode_Queries', activePinKey: 'CommerceOS_Last_Active_Pincode',
       toggleLocalFavorite(listingId) {
         let currentArray = this.fetchStoredFavorites();
         if (currentArray.includes(listingId)) { currentArray = currentArray.filter(id => id !== listingId); } 
@@ -694,20 +673,15 @@
         localStorage.setItem(this.cacheKey, JSON.stringify(currentArray));
         return currentArray;
       },
-      fetchStoredFavorites() {
-        const dataPayload = localStorage.getItem(this.cacheKey);
-        return dataPayload ? JSON.parse(dataPayload) : [];
-      },
+      fetchStoredFavorites() { const data = localStorage.getItem(this.cacheKey); return data ? JSON.parse(data) : []; },
       logPincodeRequest(listingId, pincode) {
-        let logs = this.fetchPincodeRequests();
-        if (!logs[listingId]) logs[listingId] = [];
+        let logs = this.fetchPincodeRequests(); if (!logs[listingId]) logs[listingId] = [];
         if (!logs[listingId].includes(pincode)) logs[listingId].push(pincode);
         localStorage.setItem(this.pincodeKey, JSON.stringify(logs));
+        localStorage.setItem(this.activePinKey, pincode); 
       },
-      fetchPincodeRequests() {
-        const payload = localStorage.getItem(this.pincodeKey);
-        return payload ? JSON.parse(payload) : {};
-      }
+      fetchPincodeRequests() { const payload = localStorage.getItem(this.pincodeKey); return payload ? JSON.parse(payload) : {}; },
+      getActivePincodeContext() { return localStorage.getItem(this.activePinKey) || ''; }
     };
 
     const studio = {
@@ -715,8 +689,7 @@
 
       async start() {
         try {
-          await DB.init();
-          theater.init(); // Mount touch listeners
+          await DB.init(); theater.init();
           await this.seedSuppliersData();
           await this.loadSuppliersSelectionUI();
           await this.renderFeedTimeline();
@@ -732,8 +705,7 @@
           for (const s of seed) await DB.operation('suppliers', 'readwrite', 'put', s);
         }
         const freshList = await DB.operation('suppliers', 'readonly', 'getAll');
-        this.suppliersCache = {};
-        freshList.forEach(s => this.suppliersCache[s.id] = s.name);
+        this.suppliersCache = {}; freshList.forEach(s => this.suppliersCache[s.id] = s.name);
       },
 
       async loadSuppliersSelectionUI() {
@@ -754,10 +726,8 @@
       },
 
       async promptQuickAddSupplier() {
-        const name = prompt("Enter the name of the new Sourcing Supplier:");
-        if (!name || !name.trim()) return;
-        const newId = 'sup_' + Date.now();
-        await DB.operation('suppliers', 'readwrite', 'put', { id: newId, name: name.trim() });
+        const name = prompt("Enter Sourcing Supplier name:"); if (!name || !name.trim()) return;
+        const newId = 'sup_' + Date.now(); await DB.operation('suppliers', 'readwrite', 'put', { id: newId, name: name.trim() });
         this.suppliersCache[newId] = name.trim(); this.stickySupplierId = newId;
         await this.loadSuppliersSelectionUI(); await this.renderFeedTimeline();
       },
@@ -766,11 +736,9 @@
       hideSupplierManager() { document.getElementById('supplier-manager-drawer').classList.remove('overlay-open'); },
 
       async renderSupplierDirectoryList() {
-        const directoryContainer = document.getElementById('supplier-directory-list');
-        if (!directoryContainer) return;
-        const list = await DB.operation('suppliers', 'readonly', 'getAll');
-        directoryContainer.innerHTML = '';
-        if (list.length === 0) { directoryContainer.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding: 20px;">Supplier directory empty.</div>'; return; }
+        const directoryContainer = document.getElementById('supplier-directory-list'); if (!directoryContainer) return;
+        const list = await DB.operation('suppliers', 'readonly', 'getAll'); directoryContainer.innerHTML = '';
+        if (list.length === 0) { directoryContainer.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding: 20px;">Empty directory.</div>'; return; }
         list.forEach(sup => {
           const div = document.createElement('div'); div.className = 'supplier-list-item';
           div.innerHTML = `<div><span style="font-weight:bold; color:var(--text-primary);">${sup.name}</span></div><button type="button" class="chip" style="background:rgba(255, 69, 58, 0.15); color:var(--danger); border:none; font-size:0.75rem;" onclick="studio.deleteSupplierFromManager('${sup.id}')">Delete</button>`;
@@ -780,7 +748,7 @@
 
       async addSupplierFromManager() {
         const nameInput = document.getElementById('manager-new-supplier-name'); const name = nameInput ? nameInput.value.trim() : '';
-        if (!name) return alert("Please type a valid company name.");
+        if (!name) return alert("Type a valid company name.");
         const newId = 'sup_' + Date.now(); await DB.operation('suppliers', 'readwrite', 'put', { id: newId, name });
         this.suppliersCache[newId] = name; if (nameInput) nameInput.value = '';
         await this.renderSupplierDirectoryList(); await this.loadSuppliersSelectionUI(); await this.renderFeedTimeline();
@@ -793,21 +761,16 @@
       },
 
       handleDrawerImageUpload(e) {
-        const files = Array.from(e.target.files);
-        if (!files.length) return;
+        const files = Array.from(e.target.files); if (!files.length) return;
         files.forEach(file => {
           const reader = new FileReader();
-          reader.onload = (event) => {
-            this.temporaryImagesCache.push(event.target.result);
-            this.renderDrawerImagesPreviewUI();
-          };
+          reader.onload = (event) => { this.temporaryImagesCache.push(event.target.result); this.renderDrawerImagesPreviewUI(); };
           reader.readAsDataURL(file);
         });
       },
 
       renderDrawerImagesPreviewUI() {
-        const anchor = document.getElementById('drawer-media-preview-anchor');
-        if (!anchor) return; anchor.innerHTML = '';
+        const anchor = document.getElementById('drawer-media-preview-anchor'); if (!anchor) return; anchor.innerHTML = '';
         this.temporaryImagesCache.forEach((imgSrc, idx) => {
           const img = document.createElement('img'); img.src = imgSrc; img.className = 'drawer-preview-thumb';
           img.onclick = (e) => { e.stopPropagation(); studio.temporaryImagesCache.splice(idx, 1); studio.renderDrawerImagesPreviewUI(); };
@@ -821,18 +784,19 @@
           const supplierId = document.getElementById('intake-supplier-select').value; this.stickySupplierId = supplierId;
           const rawTextEl = document.getElementById('intake-raw-text'); const rawText = rawTextEl ? rawTextEl.value.trim() : '';
           const baseMargin = parseFloat(document.getElementById('intake-margin-preset').value);
-          if (!rawText) return alert('Empty text stream.');
+          if (!rawText) return alert('Empty text block.');
 
           const draftId = 'drf_' + crypto.randomUUID();
           const parsed = await LearningParser.executeParse(supplierId, rawText);
           const lines = rawText.split('\n').filter(l => l.trim().length > 0);
-          const inferredTitle = lines[0] ? lines[0].replace(/[^\w\s]/gi, '').substring(0, 35) : 'Batch Item Design';
+          
+          const inferredTitle = lines[0] ? lines[0].replace(/[^\w\s]/gi, '').substring(0, 35) : 'Batch Design';
 
           await DB.operation('drafts', 'readwrite', 'put', {
             id: draftId, supplierId, title: inferredTitle, description: parsed.customerDescription, rawText: rawText,
             basePrice: parsed.derivedPrice || 0, consumerPrice: parsed.derivedPrice ? Math.round(parsed.derivedPrice * baseMargin) : 0,
-            pincode_rates: {}, has_images: false, customAttributes: parsed.customAttributes || {},
-            category: parsed.customAttributes['fabric'] || '', collection: '', decision: 'Pending', status: 'Imported',
+            pincode_rates: {}, has_images: false, customAttributes: {},
+            category: '', collection: '', decision: 'Pending', status: 'Imported',
             createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
           });
 
@@ -849,16 +813,13 @@
 
         if (target === 'feed') {
           document.getElementById('pane-feed').classList.add('active-view'); document.getElementById('nav-feed').classList.add('tab-active');
-          document.getElementById('view-title-label').innerText = "Studio Feed";
           if (counterNode) counterNode.style.display = 'block'; if (ctaNode) ctaNode.style.display = 'none';
           this.renderFeedTimeline();
         } else if (target === 'intake') {
           document.getElementById('pane-intake').classList.add('active-view'); document.getElementById('nav-intake').classList.add('tab-active');
-          document.getElementById('view-title-label').innerText = "Capture Batch";
           if (counterNode) counterNode.style.display = 'none'; if (ctaNode) ctaNode.style.display = 'none';
         } else if (target === 'customer') {
           document.getElementById('pane-customer').classList.add('active-view'); document.getElementById('nav-customer').classList.add('tab-active');
-          document.getElementById('view-title-label').innerText = "Client Hub";
           if (counterNode) counterNode.style.display = 'none'; this.refreshFavoritesIndicatorState(); this.renderCustomerCatalogTimeline();
         }
       },
@@ -874,39 +835,38 @@
             tbody.appendChild(tr);
           }
         }
-        if (!dynamicRowsExist) tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); font-size:0.75rem; padding:10px;">No pending pincode lookups.</td></tr>`;
+        if (!dynamicRowsExist) tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); font-size:0.75rem; padding:10px;">No lookup requests pending.</td></tr>`;
       },
 
       async copyBulkPincodeIntent() {
         const drafts = await DB.operation('drafts', 'readonly', 'getAll'); const loggedRequests = FavoritesClient.fetchPincodeRequests();
-        let textBlock = "Hello! Please verify the shipping rates:\n\n"; let analyticalMatchesFound = false;
+        let textBlock = "Hello! Please verify the shipping rates for these lookups:\n\n"; let analyticalMatchesFound = false;
         for (const d of drafts) {
           const codes = loggedRequests[d.id] || [];
           if (codes.length > 0) { analyticalMatchesFound = true; textBlock += `📌 Design: *${d.title}*\n   Pincodes: ${codes.join(', ')}\n\n`; }
         }
         if (!analyticalMatchesFound) return alert("Queue empty.");
-        navigator.clipboard.writeText(textBlock); alert("Copied!");
+        navigator.clipboard.writeText(textBlock); alert("Copied to clipboard!");
       },
 
       async renderFeedTimeline() {
         if (!DB.instance) return;
         const anchor = document.getElementById('feed-cards-anchor'); if (!anchor) return;
-        const drafts = await DB.operation('drafts', 'readonly', 'getAll');
-        await this.renderFulfillmentExportPanel(drafts);
+        const drafts = await DB.operation('drafts', 'readonly', 'getAll'); await this.renderFulfillmentExportPanel(drafts);
 
         const filtered = drafts.filter(d => this.currentFilter === 'all' || d.status === this.currentFilter);
-        document.getElementById('feed-badge-counter').innerText = filtered.length; anchor.innerHTML = '';
+        const counterNode = document.getElementById('feed-badge-counter');
+        if (counterNode) counterNode.innerText = filtered.length; 
+        anchor.innerHTML = '';
         if (filtered.length === 0) { anchor.innerHTML = `<div class="empty-state"><h3>Workspace Stream Clear</h3></div>`; return; }
-
         filtered.sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
         for (const d of filtered) {
-          const card = document.createElement('div'); card.className = 'feed-card';
-          const name = this.suppliersCache[d.supplierId] || 'Direct Sourced';
+          if (!d.customAttributes) d.customAttributes = {}; 
+          const card = document.createElement('div'); card.className = 'feed-card'; const name = this.suppliersCache[d.supplierId] || 'Direct Sourced';
           let attributeChipsHtml = '';
-          if (d.customAttributes) { for (const [key, value] of Object.entries(d.customAttributes)) { if (value) attributeChipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`; } }
+          for (const [key, value] of Object.entries(d.customAttributes)) { if (value) attributeChipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`; }
 
-          // Sprint 9.2: Memory Optimised Image Block Fetch Hook
           let mediaGalleryHtml = '';
           if (d.has_images) {
             const mediaBlock = await DB.operation('media_blocks', 'readonly', 'get', d.id);
@@ -919,7 +879,7 @@
           card.innerHTML = `
             ${mediaGalleryHtml}
             <div class="feed-card-header"><span class="supplier-pill">From: ${name}</span><span class="status-badge-verification">${d.status}</span></div>
-            <div class="feed-card-body"><h3>${d.title || 'Untitled'}</h3><p>${(d.description || '').replace(/\n/g, '<br>')}</p><div class="dynamic-attributes-container">${attributeChipsHtml}</div></div>
+            <div class="feed-card-body"><h3>${d.title}</h3><p>${(d.description || '').replace(/\n/g, '<br>')}</p><div class="dynamic-attributes-container">${attributeChipsHtml}</div></div>
             <div class="feed-card-pricing" style="margin-top: 4px;"><span class="price-tag">Retail: ₹${d.consumerPrice || '0'}</span><span class="price-base">Cost: ₹${d.basePrice || '0'}</span></div>
             <div class="feed-quick-actions">
               <button type="button" class="action-btn btn-reject" onclick="studio.fastSkipItem('${d.id}')">Skip</button>
@@ -934,23 +894,26 @@
         if (!DB.instance) return;
         const anchor = document.getElementById('customer-cards-anchor'); if (!anchor) return;
         const drafts = await DB.operation('drafts', 'readonly', 'getAll');
-        const publicListings = drafts.filter(d => d.status === 'Ready'); const activeLikes = FavoritesClient.fetchStoredFavorites();
+        
+        // STREAMLINED SPRINT 8.5 PIPELINE: Shows all items matching Stage 'Ready' immediately without multi-field friction logic
+        const publicListings = drafts.filter(d => d.status === 'Ready'); 
+        const activeLikes = FavoritesClient.fetchStoredFavorites();
 
         anchor.innerHTML = '';
-        if (publicListings.length === 0) { anchor.innerHTML = `<div class="empty-state"><h3>Catalog Empty</h3></div>`; return; }
+        if (publicListings.length === 0) { anchor.innerHTML = `<div class="empty-state"><h3>Catalog Currently Empty</h3></div>`; return; }
         publicListings.sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
         for (const d of publicListings) {
+          if (!d.customAttributes) d.customAttributes = {}; 
           const card = document.createElement('div'); card.className = 'feed-card'; const isFav = activeLikes.includes(d.id);
           let chipsHtml = '';
-          if (d.customAttributes) { for (const [key, value] of Object.entries(d.customAttributes)) { if (value) chipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`; } }
+          for (const [key, value] of Object.entries(d.customAttributes)) { if (value) chipsHtml += `<span class="attribute-chip">${key}: ${value}</span>`; }
 
-          // Sprint 9.2: Customer View decoupled image reference draw
           let mediaGalleryHtml = '';
           if (d.has_images) {
             const mediaBlock = await DB.operation('media_blocks', 'readonly', 'get', d.id);
             if (mediaBlock && mediaBlock.images && mediaBlock.images.length > 0) {
-              const imgs = mediaBlock.images.map(src => `<img src="${src}" alt="Catalog Pattern Image" onclick="theater.launch('${src}')">`).join('');
+              const imgs = mediaBlock.images.map(src => `<img src="${src}" alt="Pattern" onclick="theater.launch('${src}')">`).join('');
               mediaGalleryHtml = `<div class="card-media-gallery" style="display:flex;">${imgs}</div>`;
             }
           }
@@ -959,8 +922,9 @@
             ${mediaGalleryHtml}
             <div class="heart-like-toggle ${isFav ? 'is-active-favorite' : ''}" onclick="studio.handleCustomerLikeTap('${d.id}', this)">♥</div>
             <div class="brand-pill">Exclusive Catalog</div>
-            <div class="feed-card-body"><h3>${d.title || 'Design Pattern'}</h3><p>${(d.description || '').replace(/\n/g, '<br>')}</p><div class="dynamic-attributes-container">${chipsHtml}</div></div>
+            <div class="feed-card-body"><h3>${d.title}</h3><p>${(d.description || '').replace(/\n/g, '<br>')}</p><div class="dynamic-attributes-container">${chipsHtml}</div></div>
             <div class="feed-card-pricing" id="price-box-${d.id}" style="margin-top: 4px;"><div style="display:flex; align-items:baseline; gap:6px;"><span class="price-tag">₹${d.consumerPrice || '0'}</span><span class="shipping-extra-tag">+ Shipping Extra</span></div></div>
+            
             <div class="pincode-widget">
               <label style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Check Delivery Rates</label>
               <div class="pincode-row-inputs">
@@ -968,6 +932,8 @@
               </div>
               <div id="feedback-pin-${d.id}" style="margin-top:4px; display:none;"></div>
             </div>
+
+            <button type="button" class="action-btn" style="background:var(--accent); color:var(--bg-surface); width:100%; margin-top:4px; font-weight:800;" onclick="studio.triggerDirectWhatsAppInquiry('${d.id}')">💬 Buy This Item via WhatsApp</button>
           `;
           anchor.appendChild(card);
         }
@@ -991,6 +957,20 @@
         }
       },
 
+      async triggerDirectWhatsAppInquiry(listingId) {
+        const d = await DB.operation('drafts', 'readonly', 'get', listingId); if (!d) return;
+        const currentPin = FavoritesClient.getActivePincodeContext();
+        const pinString = currentPin ? `\n📍 Delivery Pincode: *${currentPin}*` : '';
+
+        let msg = `Hi BESOINS! I am highly interested in purchasing this design pattern:\n\n`;
+        msg += `📌 *Design Title:* ${d.title}\n`;
+        msg += `🆔 *Product ID:* \`${d.id}\`\n`;
+        msg += `💰 *Price:* ₹${d.consumerPrice} + Shipping Extra${pinString}\n\n`;
+        msg += `Please let me know if this variant is available to process. Thanks!`;
+
+        window.open(`https://wa.me/919029515185?text=${encodeURIComponent(msg)}`, '_blank');
+      },
+
       handleCustomerLikeTap(id, element) { FavoritesClient.toggleLocalFavorite(id); element.classList.toggle('is-active-favorite'); this.refreshFavoritesIndicatorState(); },
       refreshFavoritesIndicatorState() {
         const cta = document.getElementById('nav-whatsapp-sync-cta'); if (!cta) return;
@@ -1001,27 +981,29 @@
 
       async generateWhatsAppIntent() {
         const likes = FavoritesClient.fetchStoredFavorites(); if (likes.length === 0) return;
-        let txt = "Hi! Inquiring about these patterns:\n\n";
-        for (const id of likes) { const d = await DB.operation('drafts', 'readonly', 'get', id); if (d) txt += `📌 *${d.title}* - ₹${d.consumerPrice}\n`; }
-        window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
+        const currentPin = FavoritesClient.getActivePincodeContext();
+        const pinString = currentPin ? `\n📍 Target Shipping Pincode: *${currentPin}*` : '';
+
+        let txt = `Hi BESOINS! I am checking out your collection and want to inquire about these items:${pinString}\n\n`;
+        for (const id of likes) { 
+          const d = await DB.operation('drafts', 'readonly', 'get', id); 
+          if (d) txt += `📌 *${d.title}* (ID: \`${d.id}\`) - Price: ₹${d.consumerPrice}\n`; 
+        }
+        txt += `\nPlease let me know if these design variants are available to route. Thanks!`;
+        window.open(`https://wa.me/919029515185?text=${encodeURIComponent(txt)}`, '_blank');
       },
 
       async fastSkipItem(id) {
         const d = await DB.operation('drafts', 'readonly', 'get', id); if (!d) return;
         d.status = 'Rejected'; d.decision = 'Rejected'; d.updatedAt = new Date().toISOString();
-        
-        // Sprint 9.2 Garbage Collector: Delete split media block instantly from phone memory storage
         await DB.operation('drafts', 'readwrite', 'put', d);
         await DB.operation('media_blocks', 'readwrite', 'delete', id);
-        
         this.renderFeedTimeline();
       },
 
       async showCuratorDrawer(id) {
         const d = await DB.operation('drafts', 'readonly', 'get', id); if (!d) return;
         this.activeDraftRecord = d; this.temporaryPincodeCache = { ...(d.pincode_rates || {}) };
-        
-        // Sprint 9.2: Grab decoupled array block references
         this.temporaryImagesCache = [];
         if (d.has_images) {
           const block = await DB.operation('media_blocks', 'readonly', 'get', id);
@@ -1038,6 +1020,9 @@
         document.getElementById('curate-status').value = d.status;
         document.getElementById('curate-decision').value = d.decision;
         document.getElementById('curate-raw-text').value = d.rawText || '';
+
+        document.getElementById('matrix-pincode-input').value = '';
+        document.getElementById('matrix-rate-input').value = '';
 
         this.renderDrawerPincodeMatrixUI(); this.renderDrawerImagesPreviewUI();
 
@@ -1084,12 +1069,10 @@
         const newBasePrice = parseFloat(document.getElementById('curate-base-price').value) || 0;
         if (newBasePrice !== this.activeDraftRecord.basePrice) { await LearningParser.learnCorrection(this.activeDraftRecord.supplierId, this.activeDraftRecord.rawText, 'price', newBasePrice); }
 
-        // Sprint 9.2 Object Separation Workflow Execution
         const targetId = this.activeDraftRecord.id;
         const imageElementsExist = this.temporaryImagesCache.length > 0;
 
         if (imageElementsExist) {
-          // Commit split imagery data payload safely to standalone room
           await DB.operation('media_blocks', 'readwrite', 'put', { draftId: targetId, images: this.temporaryImagesCache });
         } else {
           await DB.operation('media_blocks', 'readwrite', 'delete', targetId);
@@ -1101,7 +1084,7 @@
           basePrice: newBasePrice,
           consumerPrice: parseFloat(document.getElementById('curate-consumer-price').value) || 0,
           pincode_rates: this.temporaryPincodeCache,
-          has_images: imageElementsExist, // Lightweight flag indicator bit
+          has_images: imageElementsExist,
           description: document.getElementById('curate-description').value,
           category: document.getElementById('curate-category').value,
           collection: document.getElementById('curate-collection').value,
@@ -1119,7 +1102,7 @@
         if (!this.activeDraftRecord) return;
         this.activeDraftRecord.status = 'Rejected'; this.activeDraftRecord.decision = 'Rejected'; this.activeDraftRecord.updatedAt = new Date().toISOString();
         await DB.operation('drafts', 'readwrite', 'put', this.activeDraftRecord);
-        await DB.operation('media_blocks', 'readwrite', 'delete', this.activeDraftRecord.id); // Garbage clean
+        await DB.operation('media_blocks', 'readwrite', 'delete', this.activeDraftRecord.id);
         this.hideCuratorDrawer();
       },
 
